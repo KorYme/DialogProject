@@ -2,6 +2,7 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 using KorYmeLibrary.DialogueSystem.Utilities;
+using KorYmeLibrary.DialogueSystem.Windows;
 
 namespace KorYmeLibrary.DialogueSystem
 {
@@ -9,9 +10,12 @@ namespace KorYmeLibrary.DialogueSystem
     {
         public virtual string NodeName { get; set; }
 
-        public virtual void Initialize(Vector2 position)
+        protected DSGraphView _graphView;
+
+        public virtual void Initialize(DSGraphView graphView, Vector2 position)
         {
             NodeName = GetType().Name;
+            _graphView = graphView;
             SetPosition(new Rect(position, Vector2.zero));
             mainContainer.AddClasses("ds-node__main-container");
             extensionContainer.AddClasses("ds-node__extension-container");
@@ -60,5 +64,14 @@ namespace KorYmeLibrary.DialogueSystem
         protected virtual void DrawOutputContainer() { }
 
         protected virtual void DrawExtensionContainer() { }
+
+        public void DisconnectAllPorts(VisualElement container)
+        {
+            foreach (Port port in container.Children())
+            {
+                _graphView.DeleteElements(port.connections);
+                port.DisconnectAll();
+            }
+        }
     }
 }

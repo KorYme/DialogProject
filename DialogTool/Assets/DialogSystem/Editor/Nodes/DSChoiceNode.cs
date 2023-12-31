@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor.Experimental.GraphView;
 using KorYmeLibrary.DialogueSystem.Utilities;
+using KorYmeLibrary.DialogueSystem.Windows;
 
 namespace KorYmeLibrary.DialogueSystem
 {
@@ -12,13 +13,13 @@ namespace KorYmeLibrary.DialogueSystem
         public virtual List<string> Choices { get; set; }
         public virtual string Text { get; set; }
     
-        public override void Initialize(Vector2 position)
+        public override void Initialize(DSGraphView graphView,Vector2 position)
         {
-            base.Initialize(position);
+            base.Initialize(graphView, position);
             Choices = new List<string>
             {
-                "New Choixe",
-                "New Choife"
+                "New Choice 0",
+                "New Choice 1"
             };
             Text = "Dialogue Text";
         }
@@ -27,8 +28,9 @@ namespace KorYmeLibrary.DialogueSystem
         {
             Button addChoiceButton = DSElementUtility.CreateButton("Add Choice", () =>
             {
-                Port outputPort = CreateChoicePort("New Choice");
-                Choices.Add("New Choice");
+                string portText = $"New Choice {Choices.Count}";
+                Port outputPort = CreateChoicePort(portText);
+                Choices.Add(portText);
                 outputContainer.Add(outputPort);
             });
             addChoiceButton.AddClasses("ds-node__button");

@@ -2,7 +2,7 @@ using KorYmeLibrary.DialogueSystem.Utilities;
 using UnityEditor;
 using UnityEngine.UIElements;
 
-namespace KorYmeLibrary.DialogueSystem
+namespace KorYmeLibrary.DialogueSystem.Windows
 {
     public class DSEditorWindow : EditorWindow
     {
@@ -20,7 +20,7 @@ namespace KorYmeLibrary.DialogueSystem
 
         private void AddGraphView()
         {
-            DSGraphView graphView = new DSGraphView();
+            DSGraphView graphView = new DSGraphView(this);
 
             graphView.StretchToParentSize();
 
