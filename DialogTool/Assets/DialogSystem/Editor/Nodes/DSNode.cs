@@ -1,60 +1,64 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
+using KorYmeLibrary.DialogueSystem.Utilities;
 
-public abstract class DSNode : Node
+namespace KorYmeLibrary.DialogueSystem
 {
-    public virtual string NodeName { get; set; }
-
-    public virtual void Initialize(Vector2 position)
+    public class DSNode : Node
     {
-        NodeName = "NodeName";
-        SetPosition(new Rect(position, Vector2.zero));
-        mainContainer.AddToClassList("ds-node__main-container");
-        titleContainer.AddToClassList("ds");
-        extensionContainer.AddToClassList("ds-node__extension-container");
-    }
+        public virtual string NodeName { get; set; }
 
-    public virtual void Draw()
-    {
-        // TITLE CONTAINER
-        DrawTitleContainer();
-
-        // INPUT CONTAINER
-        DrawInputContainer();
-
-        // MAIN CONTAINER
-        DrawMainContainer();
-
-        // OUTPUT CONTAINER
-        DrawOutputContainer();
-
-        // EXTENSION CONTAINER
-        DrawExtensionContainer();
-
-        // USEFUL CALLS
-        RefreshExpandedState();
-    }
-
-    protected virtual void DrawTitleContainer() 
-    {
-        TextField dialogueNameTextField = new TextField()
+        public virtual void Initialize(Vector2 position)
         {
-            value = NodeName,
-        };
-        titleContainer.Insert(0, dialogueNameTextField);
-        dialogueNameTextField.AddToClassList("ds-node__textfield");
-        dialogueNameTextField.AddToClassList("ds-node__filename-textfield");
-        dialogueNameTextField.AddToClassList("ds-node__textfield_hidden");
+            NodeName = GetType().Name;
+            SetPosition(new Rect(position, Vector2.zero));
+            mainContainer.AddClasses("ds-node__main-container");
+            extensionContainer.AddClasses("ds-node__extension-container");
+        }
+
+        public virtual void Draw()
+        {
+            // TITLE CONTAINER
+            DrawTitleContainer();
+
+            // MAIN CONTAINER
+            DrawMainContainer();
+
+            // INPUT CONTAINER
+            DrawInputContainer();
+
+            // OUTPUT CONTAINER
+            DrawOutputContainer();
+
+            // EXTENSION CONTAINER
+            DrawExtensionContainer();
+
+            // USEFUL CALLS
+            RefreshExpandedState();
+        }
+
+        protected virtual void DrawTitleContainer() 
+        {
+            TextField dialogueNameTextField = DSElementUtility.CreateTextField(NodeName);
+            titleContainer.Insert(0, dialogueNameTextField);
+            dialogueNameTextField.AddClasses(
+                "ds-node__text-field",
+                "ds-node__text-field__hidden",
+                "ds-node__filename-text-field"
+            );
+        }
+
+        protected virtual void DrawMainContainer() { }
+
+        protected virtual void DrawInputContainer()
+        {
+            Port inputPort = this.CreatePort("Dialogue Connection", direction: Direction.Input, capacity: Port.Capacity.Multi);
+            inputContainer.Add(inputPort);
+        }
+
+        protected virtual void DrawOutputContainer() { }
+
+        protected virtual void DrawExtensionContainer() { }
     }
-
-    protected virtual void DrawInputContainer() { }
-
-    protected virtual void DrawMainContainer() { }
-
-    protected virtual void DrawOutputContainer() { }
-
-    protected virtual void DrawExtensionContainer() { }
 }

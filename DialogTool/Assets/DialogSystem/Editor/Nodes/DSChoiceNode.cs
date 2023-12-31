@@ -1,85 +1,83 @@
-using Codice.CM.Client.Differences;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEditor.Experimental.GraphView;
+using KorYmeLibrary.DialogueSystem.Utilities;
 
-public class DSChoiceNode : DSNode
+namespace KorYmeLibrary.DialogueSystem
 {
-    public virtual List<string> Choices { get; set; }
-    public virtual string Text { get; set; }
+    public class DSChoiceNode : DSNode
+    {
+        public override string NodeName { get; set; }
+        public virtual List<string> Choices { get; set; }
+        public virtual string Text { get; set; }
     
-    public override void Initialize(Vector2 position)
-    {
-        base.Initialize(position);
-        Choices = new List<string>
+        public override void Initialize(Vector2 position)
         {
-            "New Choixe",
-            "New Choife"
-        };
-        Text = "Dialogue Text";
-    }
-
-    protected override void DrawInputContainer()
-    {
-        Port inputPort = InstantiatePort(Orientation.Horizontal, Direction.Input, Port.Capacity.Multi, typeof(bool));
-        inputPort.portName = "Dialogue Connection";
-        inputContainer.Add(inputPort);
-    }
-
-    protected override void DrawMainContainer()
-    {
-        Button addChoiceButton = new Button()
-        {
-            text = "Add Choice",
-        };
-        addChoiceButton.clicked += () => Choices.Add("New choice");
-        addChoiceButton.AddToClassList("ds-node__button");
-        mainContainer.Insert(1, addChoiceButton);
-    }
-
-    protected override void DrawOutputContainer()
-    {
-        foreach (var choice in Choices)
-        {
-            Port outputPort = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(bool));
-            outputPort.portName = "";
-            Button deleteChoiceButton = new Button()
+            base.Initialize(position);
+            Choices = new List<string>
             {
-                text = "X",
+                "New Choixe",
+                "New Choife"
             };
-            deleteChoiceButton.clicked += () => Choices.Remove(choice);
-            deleteChoiceButton.AddToClassList("ds-node__button");
-            TextField choiceTextField = new TextField()
-            {
-                value = choice,
-            };
-            choiceTextField.AddToClassList("ds-node__textfield");
-            choiceTextField.AddToClassList("ds-node__choice-textfield");
-            choiceTextField.AddToClassList("ds-node__textfield_hidden");
-            outputPort.Add(choiceTextField);
-            outputPort.Add(deleteChoiceButton);
-            outputContainer.Add(outputPort);
+            Text = "Dialogue Text";
         }
-    }
 
-    protected override void DrawExtensionContainer()
-    {
-        VisualElement customDataContainer = new VisualElement();
-        customDataContainer.AddToClassList("ds-node__custom-data-container");
-        Foldout textFoldout = new Foldout()
+        protected override void DrawMainContainer()
         {
-            text = "Dialogue Text",
-        };
-        TextField textTextField = new TextField()
+            Button addChoiceButton = DSElementUtility.CreateButton("Add Choice", () =>
+            {
+                Port outputPort = CreateChoicePort("New Choice");
+                Choices.Add("New Choice");
+                outputContainer.Add(outputPort);
+            });
+            addChoiceButton.AddClasses("ds-node__button");
+            mainContainer.Insert(1, addChoiceButton);
+        }
+
+        protected override void DrawOutputContainer()
         {
-            value = Text,
-        };
-        textTextField.AddToClassList("ds-node__textfield");
-        textTextField.AddToClassList("ds-node__quote-textfield");
-        textFoldout.Add(textTextField);
-        customDataContainer.Add(textFoldout);
-        extensionContainer.Add(customDataContainer);
+            foreach (var choice in Choices)
+            {
+                Port outputPort = CreateChoicePort(choice);
+                outputContainer.Add(outputPort);
+            }
+        }
+
+        protected override void DrawExtensionContainer()
+        {
+            VisualElement customDataContainer = new VisualElement();
+            customDataContainer.AddClasses("ds-node__custom-data-container");
+            Foldout textFoldout = DSElementUtility.CreateFoldout("Dialogue Text");
+            TextField textTextField = DSElementUtility.CreateTextField(Text);
+            textTextField.AddClasses(
+                "ds-node__text-field",
+                "ds-node__quote-text-field"
+            );
+            textFoldout.Add(textTextField);
+            customDataContainer.Add(textFoldout);
+            extensionContainer.Add(customDataContainer);
+        }
+
+        private Port CreateChoicePort(string choice)
+        {
+            Port outputPort = this.CreatePort();
+            Button deleteChoiceButton = DSElementUtility.CreateButton("X", () => RemoveChoicePort(outputPort, choice));
+            deleteChoiceButton.AddClasses("ds-node__button");
+            TextField choiceTextField = DSElementUtility.CreateTextField(choice);
+            choiceTextField.AddClasses(
+                "ds-node__text-field",
+                "ds-node__text-field__hidden",
+                "ds-node__choice-text-field"
+            );
+            outputPort.Add(deleteChoiceButton, choiceTextField);
+            return outputPort;
+        }
+
+        private void RemoveChoicePort(Port port, string choice)
+        {
+            Choices.Remove(choice);
+            outputContainer.Remove(port);
+        }
     }
 }

@@ -1,29 +1,35 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
+using KorYmeLibrary.DialogueSystem.Utilities;
 using UnityEditor;
-using UnityEngine;
 using UnityEngine.UIElements;
 
-public class DSEditorWindow : EditorWindow
+namespace KorYmeLibrary.DialogueSystem
 {
-    [MenuItem("Window/Dialog System/Dialog Graph")]
-    public static void OpenGraphWindow()
+    public class DSEditorWindow : EditorWindow
     {
-        GetWindow<DSEditorWindow>("Dialog Graph");
-    }
+        [MenuItem("Window/Dialog System/Dialogue Graph")]
+        public static void OpenGraphWindow()
+        {
+            GetWindow<DSEditorWindow>("Dialogue Graph");
+        }
 
-    private void OnEnable()
-    {
-        AddGraphView();
-    }
+        private void OnEnable()
+        {
+            AddGraphView();
+            AddStyles();
+        }
 
-    private void AddGraphView()
-    {
-        DSGraphView graphView = new DSGraphView();
+        private void AddGraphView()
+        {
+            DSGraphView graphView = new DSGraphView();
 
-        graphView.StretchToParentSize();
+            graphView.StretchToParentSize();
 
-        rootVisualElement.Add(graphView);
+            rootVisualElement.Add(graphView);
+        }
+
+        private void AddStyles()
+        {
+            rootVisualElement.AddStyleSheets("Assets/DialogSystem/Editor Default Resources/DSVariables.uss");
+        }
     }
 }
