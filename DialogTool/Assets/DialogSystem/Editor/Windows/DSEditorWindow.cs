@@ -3,16 +3,17 @@ using System;
 using UnityEditor;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
+using UnityEngine;
 
 namespace KorYmeLibrary.DialogueSystem.Windows
 {
     public class DSEditorWindow : EditorWindow
     {
-        DSGraphData _graphDataSO;
+        public DSGraphData GraphData { get; private set; }
+        public string FileName { get; private set; } = "";
+        DSGraphView _graphView;
 
         public DSGraphSaveHandler GraphSaveHandler { get; private set; }
-        public Action<DSGraphData> LoadData { get; private set; }
-        public Action SaveData { get; private set; }
 
         [MenuItem("Window/Dialog System/Dialogue Graph")]
         public static void OpenGraphWindow()
@@ -26,33 +27,38 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             AddGraphView();
             AddToolbar();
             AddStyles();
-            LoadInitialData();
-            new DSGroup(CreateInstance<DSGroupData>());
-        }
-
-        private void OnDisable()
-        {
-            SaveData?.Invoke();
-            SaveData = null;
-            LoadData = null;
+            GenerateNewGraphView();
         }
 
         private void AddGraphView()
         {
-            DSGraphView graphView = new DSGraphView(this);
-            graphView.StretchToParentSize();
-            SaveData += graphView.SaveGraph;
-            LoadData += graphView.LoadGraphData;
-            LoadData += data => _graphDataSO = data;
-            rootVisualElement.Add(graphView);
+            _graphView = new DSGraphView(this);
+            _graphView.StretchToParentSize();
+            rootVisualElement.Add(_graphView);
         }
 
         private void AddToolbar()
         {
             Toolbar toolbar = new Toolbar();
-            toolbar.Add(DSElementUtility.CreateObjectField("Graph File :", typeof(DSGraphData), _graphDataSO, 
-                eventCallBack => LoadData?.Invoke(eventCallBack.newValue as DSGraphData)));
-            toolbar.Add(DSElementUtility.CreateButton("Save", SaveData));
+            toolbar.Add(DSElementUtility.CreateObjectField("Graph File :", typeof(DSGraphData), GraphData,
+                eventCallBack =>
+                {
+                    GraphData = eventCallBack.newValue as DSGraphData;
+                }));
+            toolbar.Add(DSElementUtility.CreateButton("Save", () =>
+            {
+                if (GraphData != null)
+                {
+                    SaveData();
+                }
+                else
+                {
+                    Debug.LogWarning("There is no GraphData Loaded");
+                }
+            }));
+            toolbar.Add(DSElementUtility.CreateButton("Load", GenerateNewGraphView));
+            toolbar.Add(DSElementUtility.CreateTextField(FileName, "New File Name :", callbackEvent => FileName = callbackEvent.newValue));
+            toolbar.Add(DSElementUtility.CreateButton("New Graph", () => GraphSaveHandler.GenerateGraphFile(FileName)));
             toolbar.AddStyleSheets("Assets/DialogSystem/Editor Default Resources/DSToolbarStyles.uss");
             rootVisualElement.Add(toolbar);
         }
@@ -62,11 +68,22 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             rootVisualElement.AddStyleSheets("Assets/DialogSystem/Editor Default Resources/DSVariables.uss");
         }
 
-        private void LoadInitialData()
+        private void SaveData()
         {
-            if (_graphDataSO != null)
+            _graphView?.SaveGraph();
+        }
+
+        private void LoadData()
+        {
+            _graphView?.LoadGraphData(GraphData);
+        }
+
+        private void GenerateNewGraphView()
+        {
+            _graphView?.ClearGraph();
+            if (GraphData != null)
             {
-                LoadData?.Invoke(_graphDataSO);
+                LoadData();
             }
         }
     }

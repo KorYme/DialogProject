@@ -7,9 +7,10 @@ using System;
 
 namespace KorYmeLibrary.DialogueSystem
 {
-    public class DSNode : Node
+    public class DSNode : Node, IDSGraphSavable
     {
-        public DSNodeData NodeData { get; protected set; } 
+        public virtual DSNodeData NodeData { get; protected set; } 
+        public Port InputPort {  get; protected set; }
 
         protected DSGraphView _graphView;
 
@@ -34,6 +35,7 @@ namespace KorYmeLibrary.DialogueSystem
         protected virtual void InitializeData()
         {
             NodeData = ScriptableObject.CreateInstance<DSNodeData>();
+            NodeData.ID = Guid.NewGuid().ToString();
         }
 
         public virtual void Draw()
@@ -59,11 +61,8 @@ namespace KorYmeLibrary.DialogueSystem
 
         protected virtual void DrawTitleContainer() 
         {
-            TextField dialogueNameTextField = DSElementUtility.CreateTextField(NodeData.NodeName, null, callbackEvent =>
-            {
-                TextField textField = callbackEvent.target as TextField;
-                NodeData.NodeName = textField.value;
-            });
+            TextField dialogueNameTextField = DSElementUtility.CreateTextField(NodeData.NodeName, null, 
+                callbackEvent => NodeData.NodeName = callbackEvent.newValue);
             titleContainer.Insert(0, dialogueNameTextField);
             dialogueNameTextField.AddClasses(
                 "ds-node__text-field",
@@ -76,8 +75,8 @@ namespace KorYmeLibrary.DialogueSystem
 
         protected virtual void DrawInputContainer()
         {
-            Port inputPort = this.CreatePort(null, "Dialogue Connection", direction: Direction.Input, capacity: Port.Capacity.Multi);
-            inputContainer.Add(inputPort);
+            InputPort = this.CreatePort(null, "Dialogue Connection", direction: Direction.Input, capacity: Port.Capacity.Multi);
+            inputContainer.Add(InputPort);
         }
 
         protected virtual void DrawOutputContainer() { }
@@ -94,5 +93,10 @@ namespace KorYmeLibrary.DialogueSystem
         }
 
         public void OpenSearchWindow() => _graphView.OpenSearchWindow(Vector2.zero);
+
+        public virtual void Save()
+        {
+            NodeData.Position = GetPosition().position;
+        }
     }
 }

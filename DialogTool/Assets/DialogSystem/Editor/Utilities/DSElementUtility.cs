@@ -56,12 +56,12 @@ namespace KorYmeLibrary.DialogueSystem.Utilities
             return button;
         }
 
-        public static Port CreatePort(this DSNode node, string choiceName = "", string portName = "", 
+        public static Port CreatePort(this DSNode node, string otherNodeID = null, string portName = null, 
             Orientation orientation = Orientation.Horizontal, Direction direction = Direction.Output, 
             Port.Capacity capacity = Port.Capacity.Single)
         {
             Port port = node.InstantiatePort(orientation, direction, capacity, typeof(bool));
-            port.name = choiceName;
+            port.name = otherNodeID;
             port.portName = portName;
             return port;
         }

@@ -2,10 +2,12 @@ using KorYmeLibrary.DialogueSystem.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEditor.Experimental.GraphView;
+using UnityEditor.UI;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -16,14 +18,17 @@ namespace KorYmeLibrary.DialogueSystem.Windows
         DSSearchWindow _searchWindow;
         DSEditorWindow _dsEditorWindow;
 
+        IEnumerable<DSNode> _AllDSNodes => nodes.OfType<DSNode>();
+        IEnumerable<DSChoiceNode> _AllDSChoiceNodes => nodes.OfType<DSChoiceNode>();
+
         public DSGraphView(DSEditorWindow dsEditorWindow)
         {
             _dsEditorWindow = dsEditorWindow;
             AddManipulators();
             AddSearchWindow();
-            AddGridBackground();
             AddStyles();
-            AddGroupRenamedCallback();
+            AddGraphViewChangeCallback();
+            AddGridBackground();
         }
 
         private void AddManipulators()
@@ -32,8 +37,6 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             this.AddManipulator(new ContentDragger());
             this.AddManipulator(new SelectionDragger());
             this.AddManipulator(new RectangleSelector());
-            //this.AddManipulator(GenerateContextMenuManipulator("Create Node/Choice Node", CreateAndAddChoiceNode));
-            //this.AddManipulator(GenerateContextMenuManipulator("Create Group", CreateAndAddGroup));
         }
 
         public IManipulator GenerateContextMenuManipulator(string funcName, Func<Vector2, GraphElement> func)
@@ -60,28 +63,39 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             return choiceNode;
         }
 
-        public DSGroup CreateAndAddGroup(Vector2 position)
+        public DSChoiceNode CreateAndAddChoiceNode(DSChoiceNodeData data)
+        {
+            DSChoiceNode choiceNode = new DSChoiceNode(this, data);
+            choiceNode.Draw();
+            AddElement(choiceNode);
+            return choiceNode;
+        }
+
+        public DSGroup CreateAndAddGroup(Vector2 position, IEnumerable<GraphElement> allChildren = null)
         {
             DSGroup group = new DSGroup(position)
             {
                 title = "New_Group",
             };
-            foreach (GraphElement selectedElement in selection.ToList())
-            {
-                switch (selectedElement)
-                {
-                    case DSNode:
-                        group.AddElement(selectedElement); break;
-                    default: break;
-                }
-            }
+            group.AddElements((allChildren is null ? selection.OfType<DSNode>() : allChildren));
             AddElement(group);
             return group;
         }
 
-        void AddGroupRenamedCallback()
+        public DSGroup CreateAndAddGroup(DSGroupData data, IEnumerable<GraphElement> allChildren = null)
         {
-            groupTitleChanged = (group, text) => { };       
+            DSGroup group = new DSGroup(data)
+            {
+                title = "New_Group",
+            };
+            group.AddElements((allChildren is null ? selection.OfType<GraphElement>() : allChildren));
+            AddElement(group);
+            return group;
+        }
+
+        void AddGraphViewChangeCallback()
+        {
+            graphViewChanged = change => change;
         }
 
         private void AddStyles() => this.AddStyleSheets(
@@ -102,7 +116,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
 
         public bool OpenSearchWindow(Vector2 position) => SearchWindow.Open(new SearchWindowContext(GetLocalMousePosition(position)), _searchWindow);
 
-        private void AddGridBackground()
+        public void AddGridBackground()
         {
             GridBackground gridBackground = new GridBackground()
             {
@@ -112,28 +126,78 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             Insert(0, gridBackground);
         }
 
+        public void ClearGraph()
+        {
+            DeleteElements(graphElements);
+        }
+
         #region UTILITIES
         public Vector2 GetLocalMousePosition(Vector2 mousePosition, bool isSearchWindow = false) => 
             contentContainer.WorldToLocal(mousePosition - (isSearchWindow ? _dsEditorWindow.position.position : Vector2.zero));
         #endregion
 
-        #region SAVE_GRAPH
+        #region SAVE_AND_LOAD_METHODS
         public void LoadGraphData(DSGraphData graphData)
         {
+            if (graphData is null) return;
+            // Generate all nodes
+            foreach (DSNodeData nodeData in graphData.AllNodes)
+            {
+                switch (nodeData)
+                {
+                    case DSChoiceNodeData choiceNodeData:
+                        CreateAndAddChoiceNode(choiceNodeData);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            // Generate all groups
+            foreach (DSGroupData group in graphData.AllGroups)
+            {
+                CreateAndAddGroup(group, _AllDSNodes.Where(dsNode => group.ChildrenNodes.Contains(dsNode.NodeData)));
+            }
+            // Link all Choice Nodes
+            foreach (DSChoiceNode item in _AllDSChoiceNodes)
+            {
+                item.InitializeEdgeConnections(_AllDSNodes);
+            }
             
         }
 
         public void SaveGraph()
         {
-            foreach (GraphElement element in graphElements)
+            foreach (IDSGraphSavable element in graphElements.OfType<IDSGraphSavable>())
             {
                 switch (element)
                 {
-                    case DSNode node: Debug.Log(node.NodeData.NodeName); break;
-                    case DSGroup group: Debug.Log(group.title); break;
+                    case DSChoiceNode choiceNode: 
+                        SaveDataInProject(choiceNode.ChoiceNodeData);
+                        AddToNodes(choiceNode.ChoiceNodeData);
+                        break;
+                    case DSGroup group: 
+                        SaveDataInProject(group.GroupData); 
+                        AddToGroups(group.GroupData);
+                        break;
                     default: break;
                 }
+                element.Save();
             }
+        }
+
+        void SaveDataInProject<T>(T elementData) where T : DSElementData
+            => _dsEditorWindow.GraphSaveHandler.SaveDataInProject(elementData, _dsEditorWindow.GraphData);
+
+        void AddToNodes(DSNodeData nodeData)
+        {
+            if (_dsEditorWindow.GraphData.AllNodes.Contains(nodeData)) return;
+            _dsEditorWindow.GraphData.AllNodes.Add(nodeData);
+        }
+
+        void AddToGroups(DSGroupData groupData)
+        {
+            if (_dsEditorWindow.GraphData.AllGroups.Contains(groupData)) return;
+            _dsEditorWindow.GraphData.AllGroups.Add(groupData);
         }
         #endregion
     }
