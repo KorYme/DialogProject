@@ -32,13 +32,13 @@ namespace KorYmeLibrary.DialogueSystem.Windows
                 new SearchTreeEntry(new GUIContent("Choice Node", _spacingIcon))
                 {
                     level = 2,
-                    userData = new DSChoiceNode(),
+                    userData = nameof(DSChoiceNode),
                 },
                 new SearchTreeGroupEntry(new GUIContent("Dialogue Group"), 1),
                 new SearchTreeEntry(new GUIContent("Single Group", _spacingIcon))
                 {
                     level = 2,
-                    userData = new DSGroup(),
+                    userData = nameof(DSGroup),
                 },
             };
         }
@@ -47,8 +47,8 @@ namespace KorYmeLibrary.DialogueSystem.Windows
         {
             switch (SearchTreeEntry.userData)
             {
-                case DSChoiceNode: _dsGraphView.CreateAndAddChoiceNode(_dsGraphView.GetLocalMousePosition(context.screenMousePosition, true)); break;
-                case DSGroup: _dsGraphView.CreateAndAddGroup(_dsGraphView.GetLocalMousePosition(context.screenMousePosition, true)); break;
+                case "DSChoiceNode": _dsGraphView.CreateAndAddChoiceNode(_dsGraphView.GetLocalMousePosition(context.screenMousePosition, true)); break;
+                case "DSGroup": _dsGraphView.CreateAndAddGroup(_dsGraphView.GetLocalMousePosition(context.screenMousePosition, true)); break;
                 default: return false;
             }
             return IS_WINDOW_CLOSED_ON_ENTRY_SELECTED;

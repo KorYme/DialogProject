@@ -3,22 +3,37 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using KorYmeLibrary.DialogueSystem.Utilities;
 using KorYmeLibrary.DialogueSystem.Windows;
+using System;
 
 namespace KorYmeLibrary.DialogueSystem
 {
     public class DSNode : Node
     {
-        public virtual string NodeName { get; set; }
+        public DSNodeData NodeData { get; protected set; } 
 
         protected DSGraphView _graphView;
 
-        public virtual void Initialize(DSGraphView graphView, Vector2 position)
+        public DSNode(DSGraphView graphView, Vector2 position)
         {
-            NodeName = GetType().Name;
+            InitializeData();
             _graphView = graphView;
             SetPosition(new Rect(position, Vector2.zero));
             mainContainer.AddClasses("ds-node__main-container");
             extensionContainer.AddClasses("ds-node__extension-container");
+        }
+
+        public DSNode(DSGraphView graphView, DSNodeData data)
+        {
+            NodeData = data;
+            _graphView = graphView;
+            SetPosition(new Rect(data.Position, Vector2.zero));
+            mainContainer.AddClasses("ds-node__main-container");
+            extensionContainer.AddClasses("ds-node__extension-container");
+        }
+
+        protected virtual void InitializeData()
+        {
+            NodeData = ScriptableObject.CreateInstance<DSNodeData>();
         }
 
         public virtual void Draw()
@@ -44,7 +59,11 @@ namespace KorYmeLibrary.DialogueSystem
 
         protected virtual void DrawTitleContainer() 
         {
-            TextField dialogueNameTextField = DSElementUtility.CreateTextField(NodeName);
+            TextField dialogueNameTextField = DSElementUtility.CreateTextField(NodeData.NodeName, null, callbackEvent =>
+            {
+                TextField textField = callbackEvent.target as TextField;
+                NodeData.NodeName = textField.value;
+            });
             titleContainer.Insert(0, dialogueNameTextField);
             dialogueNameTextField.AddClasses(
                 "ds-node__text-field",
@@ -57,7 +76,7 @@ namespace KorYmeLibrary.DialogueSystem
 
         protected virtual void DrawInputContainer()
         {
-            Port inputPort = this.CreatePort("Dialogue Connection", direction: Direction.Input, capacity: Port.Capacity.Multi);
+            Port inputPort = this.CreatePort(null, "Dialogue Connection", direction: Direction.Input, capacity: Port.Capacity.Multi);
             inputContainer.Add(inputPort);
         }
 
@@ -73,5 +92,7 @@ namespace KorYmeLibrary.DialogueSystem
                 port.DisconnectAll();
             }
         }
+
+        public void OpenSearchWindow() => _graphView.OpenSearchWindow(Vector2.zero);
     }
 }

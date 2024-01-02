@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -22,6 +23,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             AddSearchWindow();
             AddGridBackground();
             AddStyles();
+            AddGroupRenamedCallback();
         }
 
         private void AddManipulators()
@@ -52,8 +54,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
 
         public DSChoiceNode CreateAndAddChoiceNode(Vector2 position)
         {
-            DSChoiceNode choiceNode = new DSChoiceNode();
-            choiceNode.Initialize(this, position);
+            DSChoiceNode choiceNode = new DSChoiceNode(this, position);
             choiceNode.Draw();
             AddElement(choiceNode);
             return choiceNode;
@@ -61,11 +62,10 @@ namespace KorYmeLibrary.DialogueSystem.Windows
 
         public DSGroup CreateAndAddGroup(Vector2 position)
         {
-            DSGroup group = new DSGroup()
+            DSGroup group = new DSGroup(position)
             {
-                title = "New Group",
+                title = "New_Group",
             };
-            group.SetPosition(new Rect(position, Vector2.zero));
             foreach (GraphElement selectedElement in selection.ToList())
             {
                 switch (selectedElement)
@@ -77,6 +77,11 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             }
             AddElement(group);
             return group;
+        }
+
+        void AddGroupRenamedCallback()
+        {
+            groupTitleChanged = (group, text) => { };       
         }
 
         private void AddStyles() => this.AddStyleSheets(
@@ -92,12 +97,17 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             if (_searchWindow != null) return;
             _searchWindow = ScriptableObject.CreateInstance<DSSearchWindow>();
             _searchWindow.Initialize(this);
-            nodeCreationRequest = context => SearchWindow.Open(new SearchWindowContext(GetLocalMousePosition(context.screenMousePosition)), _searchWindow);
+            nodeCreationRequest = context => OpenSearchWindow(context.screenMousePosition);
         }
+
+        public bool OpenSearchWindow(Vector2 position) => SearchWindow.Open(new SearchWindowContext(GetLocalMousePosition(position)), _searchWindow);
 
         private void AddGridBackground()
         {
-            GridBackground gridBackground = new GridBackground();
+            GridBackground gridBackground = new GridBackground()
+            {
+                name = "Background"
+            };
             gridBackground.StretchToParentSize();
             Insert(0, gridBackground);
         }
@@ -105,6 +115,26 @@ namespace KorYmeLibrary.DialogueSystem.Windows
         #region UTILITIES
         public Vector2 GetLocalMousePosition(Vector2 mousePosition, bool isSearchWindow = false) => 
             contentContainer.WorldToLocal(mousePosition - (isSearchWindow ? _dsEditorWindow.position.position : Vector2.zero));
+        #endregion
+
+        #region SAVE_GRAPH
+        public void LoadGraphData(DSGraphData graphData)
+        {
+            
+        }
+
+        public void SaveGraph()
+        {
+            foreach (GraphElement element in graphElements)
+            {
+                switch (element)
+                {
+                    case DSNode node: Debug.Log(node.NodeData.NodeName); break;
+                    case DSGroup group: Debug.Log(group.title); break;
+                    default: break;
+                }
+            }
+        }
         #endregion
     }
 }

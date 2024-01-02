@@ -1,6 +1,8 @@
+using Codice.CM.SEIDInfo;
 using System;
 using Unity.VisualScripting;
 using UnityEditor.Experimental.GraphView;
+using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 
 namespace KorYmeLibrary.DialogueSystem.Utilities
@@ -16,11 +18,12 @@ namespace KorYmeLibrary.DialogueSystem.Utilities
             return element;
         }
 
-        public static TextField CreateTextField(string initialValue = null, EventCallback<ChangeEvent<string>> onChangedCallback = null)
+        public static TextField CreateTextField(string initialValue = null, string labelValue = null, EventCallback<ChangeEvent<string>> onChangedCallback = null)
         {
             TextField textField = new TextField()
             {
                 value = initialValue,
+                label = labelValue,
             };
             if (onChangedCallback != null)
             {
@@ -29,9 +32,9 @@ namespace KorYmeLibrary.DialogueSystem.Utilities
             return textField;
         }
 
-        public static TextField CreateTextArea(string initialValue = null, EventCallback<ChangeEvent<string>> onChangedCallback = null)
+        public static TextField CreateTextArea(string initialValue = null, string labelValue = null, EventCallback<ChangeEvent<string>> onChangedCallback = null)
         {
-            TextField textField = CreateTextField(initialValue, onChangedCallback);
+            TextField textField = CreateTextField(initialValue, labelValue, onChangedCallback);
             textField.multiline = true;
             return textField;
         }
@@ -53,13 +56,29 @@ namespace KorYmeLibrary.DialogueSystem.Utilities
             return button;
         }
 
-        public static Port CreatePort(this DSNode node, string portName = "", 
+        public static Port CreatePort(this DSNode node, string choiceName = "", string portName = "", 
             Orientation orientation = Orientation.Horizontal, Direction direction = Direction.Output, 
             Port.Capacity capacity = Port.Capacity.Single)
         {
             Port port = node.InstantiatePort(orientation, direction, capacity, typeof(bool));
+            port.name = choiceName;
             port.portName = portName;
             return port;
+        }
+
+        public static ObjectField CreateObjectField(string title = null, Type type = null, UnityEngine.Object initialValue = null, EventCallback<ChangeEvent<UnityEngine.Object>> callback = null)
+        {
+            ObjectField objectField = new ObjectField()
+            {
+                label = title,
+                objectType = type,
+                value = initialValue,
+            };
+            if (callback != null)
+            {
+                objectField.RegisterValueChangedCallback(callback);
+            }
+            return objectField;
         }
     }
 }

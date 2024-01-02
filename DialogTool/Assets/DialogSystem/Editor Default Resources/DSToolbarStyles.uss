@@ -10,6 +10,13 @@ TextField
 	padding: var(--ds-metrics-window-pixels-4);
 }
 
+ObjectField
+{
+	padding: var(--ds-metrics-window-pixels-4);
+	margin: var(--ds-metrics-window-pixels-4);
+	width: var(--ds-metrics-window-pixels-360)
+}
+
 Button
 {
 	background-color: var(--ds-colors-window-dark-grey-5);
@@ -36,6 +43,11 @@ Button:active
 }
 
 TextField:focus > .unity-text-field__label
+{
+	color: var(--ds-colors-window-yellow);
+}
+
+ObjectField:focus > .unity-text-field__label
 {
 	color: var(--ds-colors-window-yellow);
 }
