@@ -31,9 +31,10 @@ namespace KorYmeLibrary.DialogueSystem
 
         protected override void DrawMainContainer()
         {
+            base.DrawMainContainer();
             Button addChoiceButton = DSElementUtility.CreateButton("Add Choice", () => CreateOutputPort());
             addChoiceButton.AddClasses("ds-node__button");
-            mainContainer.Insert(1, addChoiceButton);
+            mainContainer.Insert(2, addChoiceButton);
         }
 
         protected override void DrawOutputContainer()

@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System;
 using Unity.VisualScripting;
+using System.Drawing.Imaging;
 
 namespace KorYmeLibrary.DialogueSystem.Utilities
 {
@@ -28,19 +29,29 @@ namespace KorYmeLibrary.DialogueSystem.Utilities
 
         public DSGraphData GenerateGraphFile(string fileName)
         {
+            if (fileName == "")
+            {
+                Debug.LogWarning("Please choose a valid name before generating a new graph file");
+                return null;
+            }
             GenerateDSRootFolder();
-            if (!File.Exists(Path.Combine(FOLDER_PATH, fileName)))
+            if (!File.Exists(Path.Combine(FOLDER_PATH, fileName) + ".asset"))
             {
                 DSGraphData graphData = ScriptableObject.CreateInstance<DSGraphData>();
                 AssetDatabase.CreateAsset(graphData, Path.Combine(FOLDER_PATH, fileName) + ".asset");
                 AssetDatabase.SaveAssets();
+                if (!Directory.Exists(Path.Combine(FOLDER_PATH, fileName)))
+                {
+                    Directory.CreateDirectory(Path.Combine(FOLDER_PATH, fileName));
+                    AssetDatabase.Refresh();
+                }
                 return graphData;
             }
             Debug.LogWarning("A file named the same way already exist, please rename it before generating a new graph");
             return null;
         }
 
-        public bool SaveDataInProject<T>(T elementData, DSGraphData graphData) where T : DSElementData
+        public bool SaveDataInProject<T>(T elementData, string graphName) where T : DSElementData
         {
             Type tmpType = typeof(T);
             string path = "";
@@ -49,8 +60,8 @@ namespace KorYmeLibrary.DialogueSystem.Utilities
                 path = Path.Combine(tmpType.Name, path);
                 tmpType = tmpType.BaseType;
             }
-            path = Path.Combine(FOLDER_PATH, path);
-            if (!Directory.Exists(path))
+            path = Path.Combine(FOLDER_PATH, graphName, path);
+            if (!Directory.Exists(path)) 
             {
                 Directory.CreateDirectory(Path.Combine(path));
                 AssetDatabase.Refresh();
@@ -63,6 +74,22 @@ namespace KorYmeLibrary.DialogueSystem.Utilities
                 return true;
             }
             return false;
+        }
+
+        public void RemoveDataFromProject<T>(T elementData) where T : DSElementData
+        {
+            Type tmpType = typeof(T);
+            string path = "";
+            while (tmpType != typeof(DSElementData))
+            {
+                path = Path.Combine(tmpType.Name, path);
+                tmpType = tmpType.BaseType;
+            }
+            path = Path.Combine(FOLDER_PATH, path);
+            if (!Directory.Exists(path))
+            {
+                Debug.Log("The file in which the data should have been saved has been destroyed");
+            }
         }
     }
 }

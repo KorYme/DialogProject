@@ -4,6 +4,7 @@ using UnityEngine.UIElements;
 using KorYmeLibrary.DialogueSystem.Utilities;
 using KorYmeLibrary.DialogueSystem.Windows;
 using System;
+using UnityEditor.UIElements;
 
 namespace KorYmeLibrary.DialogueSystem
 {
@@ -71,7 +72,12 @@ namespace KorYmeLibrary.DialogueSystem
             );
         }
 
-        protected virtual void DrawMainContainer() { }
+        protected virtual void DrawMainContainer()
+        {
+            ObjectField dataScriptable = DSElementUtility.CreateObjectField(null, typeof(DSNodeData), NodeData);
+            dataScriptable.SetEnabled(false);
+            mainContainer.Insert(1, dataScriptable);
+        }
 
         protected virtual void DrawInputContainer()
         {

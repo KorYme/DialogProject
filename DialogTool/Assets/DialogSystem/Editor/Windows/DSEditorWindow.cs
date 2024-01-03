@@ -4,15 +4,33 @@ using UnityEditor;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 using UnityEngine;
+using System.Linq;
 
 namespace KorYmeLibrary.DialogueSystem.Windows
 {
     public class DSEditorWindow : EditorWindow
     {
-        public DSGraphData GraphData { get; private set; }
-        public string FileName { get; private set; } = "";
-        DSGraphView _graphView;
+        DSGraphData _graphData;
+        event Action<bool> _onGraphDataChange;
+        public DSGraphData GraphData
+        {
+            get => _graphData;
+            set
+            {
+                if (value != _graphData)
+                {
+                    _graphData = value;
+                    _onGraphDataChange?.Invoke(value != null);
+                }
+            }
+        }
 
+        event Action<string> _onFileNameChange;
+        public string FileName { get; private set; }
+
+        event Action<bool> _onMiniMapVisibilityChanged;
+
+        DSGraphView _graphView;
         public DSGraphSaveHandler GraphSaveHandler { get; private set; }
 
         [MenuItem("Window/Dialog System/Dialogue Graph")]
@@ -27,7 +45,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             AddGraphView();
             AddToolbar();
             AddStyles();
-            GenerateNewGraphView();
+            LoadData();
         }
 
         private void AddGraphView()
@@ -37,54 +55,94 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             rootVisualElement.Add(_graphView);
         }
 
-        private void AddToolbar()
-        {
-            Toolbar toolbar = new Toolbar();
-            toolbar.Add(DSElementUtility.CreateObjectField("Graph File :", typeof(DSGraphData), GraphData,
-                eventCallBack =>
-                {
-                    GraphData = eventCallBack.newValue as DSGraphData;
-                }));
-            toolbar.Add(DSElementUtility.CreateButton("Save", () =>
-            {
-                if (GraphData != null)
-                {
-                    SaveData();
-                }
-                else
-                {
-                    Debug.LogWarning("There is no GraphData Loaded");
-                }
-            }));
-            toolbar.Add(DSElementUtility.CreateButton("Load", GenerateNewGraphView));
-            toolbar.Add(DSElementUtility.CreateTextField(FileName, "New File Name :", callbackEvent => FileName = callbackEvent.newValue));
-            toolbar.Add(DSElementUtility.CreateButton("New Graph", () => GraphSaveHandler.GenerateGraphFile(FileName)));
-            toolbar.AddStyleSheets("Assets/DialogSystem/Editor Default Resources/DSToolbarStyles.uss");
-            rootVisualElement.Add(toolbar);
-        }
-
         private void AddStyles()
         {
             rootVisualElement.AddStyleSheets("Assets/DialogSystem/Editor Default Resources/DSVariables.uss");
         }
 
+        private void AddToolbar()
+        {
+            Toolbar toolbar = new Toolbar();
+
+            ObjectField graphFileField = DSElementUtility.CreateObjectField("Graph File :", typeof(DSGraphData), GraphData, ChangeGraphDataFile);
+            Button saveButton = DSElementUtility.CreateButton("Save", SaveData);
+            Button loadButton = DSElementUtility.CreateButton("Load", LoadData);
+            Button clearButton = DSElementUtility.CreateButton("Clear", ClearGraph);
+            TextField fileNameTextfield = DSElementUtility.CreateTextField(FileName, "New File Name :", ChangeFileName);
+            Button newGraphButton = DSElementUtility.CreateButton("New Graph", GenerateNewGraph);
+            Button miniMapButton = DSElementUtility.CreateButton("Mini Map", ToggleMiniMap);
+
+            saveButton.SetEnabled(GraphData != null);
+            _onGraphDataChange += saveButton.SetEnabled;
+            loadButton.SetEnabled(GraphData != null);
+            _onGraphDataChange += loadButton.SetEnabled;
+            _onFileNameChange += fileNameTextfield.SetValueWithoutNotify;
+            //_onMiniMapVisibilityChanged += miniMapButton.;
+
+            toolbar.Add(graphFileField, saveButton, loadButton, clearButton, fileNameTextfield, newGraphButton, miniMapButton);
+            toolbar.AddStyleSheets("Assets/DialogSystem/Editor Default Resources/DSToolbarStyles.uss");
+            rootVisualElement.Add(toolbar);
+        }
+
+    #region TOOLBAR_METHODS
+        private void ChangeGraphDataFile(ChangeEvent<UnityEngine.Object> callbackData)
+        {
+            GraphData = callbackData.newValue as DSGraphData;
+        }
+
         private void SaveData()
         {
-            _graphView?.SaveGraph();
+            if (GraphData != null)
+            {
+                _graphView?.SaveGraph();
+            }
+            else
+            {
+                Debug.LogWarning("There is no GraphData Loaded");
+            }
         }
 
         private void LoadData()
         {
-            _graphView?.LoadGraphData(GraphData);
-        }
-
-        private void GenerateNewGraphView()
-        {
-            _graphView?.ClearGraph();
             if (GraphData != null)
             {
+                _graphView?.ClearGraph();
+                _graphView?.LoadGraphData(GraphData);
+            }
+        }
+
+        private void ClearGraph()
+        {
+            _graphView?.ClearGraph();
+        }
+
+        private void ChangeFileName(ChangeEvent<string> callbackData)
+        {
+            FileName = callbackData.newValue;
+        }
+
+        private void GenerateNewGraph()
+        {
+            if (!FileName.IsSerializableFriendly())
+            {
+                Debug.LogWarning($"The file name \"{FileName}\" could not be serialized, all non serializable characters have been removed.");
+                FileName = FileName.RemoveNonSerializableCharacters();
+                _onFileNameChange?.Invoke(FileName);
+                return;
+            }
+            DSGraphData newGraphData = GraphSaveHandler.GenerateGraphFile(FileName);
+            if (newGraphData != null)
+            {
+                GraphData = newGraphData;
                 LoadData();
             }
         }
+
+        private void ToggleMiniMap()
+        {
+            bool minimapVisibility = _graphView.ToggleMinimapVisibility();
+            _onMiniMapVisibilityChanged?.Invoke(minimapVisibility);
+        }
     }
+    #endregion
 }

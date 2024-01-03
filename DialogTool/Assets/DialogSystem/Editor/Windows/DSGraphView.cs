@@ -16,6 +16,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
     public class DSGraphView : GraphView
     {
         DSSearchWindow _searchWindow;
+        MiniMap _miniMap;
         DSEditorWindow _dsEditorWindow;
 
         IEnumerable<DSNode> _AllDSNodes => nodes.OfType<DSNode>();
@@ -26,9 +27,21 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             _dsEditorWindow = dsEditorWindow;
             AddManipulators();
             AddSearchWindow();
+            AddMinimap();
             AddStyles();
+            AddMiniMapStyles();
             AddGraphViewChangeCallback();
             AddGridBackground();
+        }
+
+        private void AddMinimap()
+        {
+            _miniMap = new MiniMap()
+            {
+                anchored = true,
+            };
+            _miniMap.SetPosition(new Rect(15, 50, 200, 125));
+            Add(_miniMap);
         }
 
         private void AddManipulators()
@@ -54,6 +67,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             }
             base.BuildContextualMenu(evt);
         }
+        
 
         public DSChoiceNode CreateAndAddChoiceNode(Vector2 position)
         {
@@ -95,13 +109,25 @@ namespace KorYmeLibrary.DialogueSystem.Windows
 
         void AddGraphViewChangeCallback()
         {
-            graphViewChanged = change => change;
+            graphViewChanged = change =>
+            {
+                return change;
+            };
         }
 
         private void AddStyles() => this.AddStyleSheets(
             "Assets/DialogSystem/Editor Default Resources/DSGraphViewStyles.uss",
             "Assets/DialogSystem/Editor Default Resources/DSNodeStyles.uss"
         );
+
+        private void AddMiniMapStyles()
+        {
+            _miniMap.style.backgroundColor = new StyleColor(new Color32(29,29,29,255));
+            _miniMap.style.borderBottomColor = new StyleColor(new Color32(51,51,51,255));
+            _miniMap.style.borderTopColor = new StyleColor(new Color32(51,51,51,255));
+            _miniMap.style.borderLeftColor = new StyleColor(new Color32(51,51,51,255));
+            _miniMap.style.borderRightColor = new StyleColor(new Color32(51,51,51,255));
+        }
 
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
             => ports.Where(port => port.node != startPort.node && port.direction != startPort.direction).ToList();
@@ -129,6 +155,12 @@ namespace KorYmeLibrary.DialogueSystem.Windows
         public void ClearGraph()
         {
             DeleteElements(graphElements);
+        }
+
+        public bool ToggleMinimapVisibility()
+        {
+            _miniMap.visible = !_miniMap.visible;
+            return _miniMap.visible;
         }
 
         #region UTILITIES
@@ -167,11 +199,13 @@ namespace KorYmeLibrary.DialogueSystem.Windows
 
         public void SaveGraph()
         {
-            foreach (IDSGraphSavable element in graphElements.OfType<IDSGraphSavable>())
+            ClearGraphData();
+            IEnumerable<IDSGraphSavable> allElements = graphElements.OfType<IDSGraphSavable>();
+            foreach (IDSGraphSavable element in allElements)
             {
                 switch (element)
                 {
-                    case DSChoiceNode choiceNode: 
+                    case DSChoiceNode choiceNode:
                         SaveDataInProject(choiceNode.ChoiceNodeData);
                         AddToNodes(choiceNode.ChoiceNodeData);
                         break;
@@ -185,8 +219,14 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             }
         }
 
+        void ClearGraphData()
+        {
+            _dsEditorWindow.GraphData.AllNodes.Clear();
+            _dsEditorWindow.GraphData.AllGroups.Clear();
+        }
+
         void SaveDataInProject<T>(T elementData) where T : DSElementData
-            => _dsEditorWindow.GraphSaveHandler.SaveDataInProject(elementData, _dsEditorWindow.GraphData);
+            => _dsEditorWindow.GraphSaveHandler.SaveDataInProject(elementData, _dsEditorWindow.GraphData.name);
 
         void AddToNodes(DSNodeData nodeData)
         {
