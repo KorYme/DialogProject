@@ -5,11 +5,11 @@ namespace KorYmeLibrary.DialogueSystem
 {
     public partial class DSGraphData : ScriptableObject
     {
-        [field: SerializeField] public List<DSNodeData> AllNodes { get; set; } = new List<DSNodeData>();
-        [field: SerializeField] public List<DSGroupData> AllGroups { get; set; } = new List<DSGroupData>();
+        [SerializeField] public List<DSNodeData> AllNodes = new List<DSNodeData>();
+        [SerializeField] public List<DSGroupData> AllGroups = new List<DSGroupData>();
         
         #if UNITY_EDITOR
-        [field: SerializeField] public List<DSElementData> AllRemovedElements { get; set; } = new List<DSElementData>();
+        [SerializeField] public List<DSElementData> AllRemovedElements = new List<DSElementData>();
 
         public void PlaceAllDataInRemoved()
         {

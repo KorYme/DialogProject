@@ -4,6 +4,7 @@ using UnityEngine.UIElements;
 using UnityEditor;
 using UnityEditor.UIElements;
 using KorYmeLibrary.DialogueSystem.Utilities;
+using Unity.VisualScripting;
 
 namespace KorYmeLibrary.DialogueSystem.Windows
 {
@@ -21,7 +22,6 @@ namespace KorYmeLibrary.DialogueSystem.Windows
                 return _dsDialogueGraphWindowData;
             }
         }
-
         DSGraphView _graphView;
         DSGraphData _graphData;
         public DSGraphData GraphData
@@ -31,11 +31,14 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             {
                 if (value != _graphData)
                 {
-                    if (WindowData.IsSaveOnLoad)
+                    if (GraphData != null)
                     {
-                        _graphView?.SaveGraph();
+                        if (WindowData.IsSaveOnLoad)
+                        {
+                            SaveData();
+                        }
+                        GraphData.DeleteAllRemovedData();
                     }
-                    GraphData?.DeleteAllRemovedData();
                     _graphData = value;
                     _onGraphDataChange?.Invoke(value != null);
                     LoadData();
@@ -157,8 +160,16 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             DSGraphData newGraphData = GraphSaveHandler.GenerateGraphDataFile(WindowData.FileName);
             if (newGraphData != null)
             {
-                GraphData = newGraphData;
-                LoadData();
+                if (GraphData != null)
+                {
+                    GraphData = newGraphData;
+                }
+                else
+                {
+                    _graphData = newGraphData;
+                    _onGraphDataChange?.Invoke(true);
+                    SaveData();
+                }
             }
         }
 

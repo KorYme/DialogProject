@@ -6,6 +6,6 @@ namespace KorYmeLibrary.DialogueSystem
 {
     public class DSNodeData : DSElementData
     {
-        [field: SerializeField] public string NodeName { get; set; } = "New Node";
+        [SerializeField] public string NodeName = "New Node";
     }
 }

@@ -6,7 +6,7 @@ namespace KorYmeLibrary.DialogueSystem
 {
     public class DSGroupData : DSElementData
     {
-        [field: SerializeField] public string Title { get; set; } = "New group";
-        [field: SerializeField] public List<DSNodeData> ChildrenNodes { get; set; } = new List<DSNodeData>();
+        [SerializeField] public string Title = "New group";
+        [SerializeField] public List<DSNodeData> ChildrenNodes = new List<DSNodeData>();
     }
 }
