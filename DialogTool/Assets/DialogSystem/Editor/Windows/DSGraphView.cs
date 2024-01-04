@@ -5,6 +5,8 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor.Experimental.GraphView;
 using KorYmeLibrary.DialogueSystem.Utilities;
+using UnityEditor;
+using Unity.VisualScripting;
 
 namespace KorYmeLibrary.DialogueSystem.Windows
 {
@@ -164,8 +166,10 @@ namespace KorYmeLibrary.DialogueSystem.Windows
         #region SAVE_AND_LOAD_METHODS
         public void LoadGraph(DSGraphData graphData)
         {
-            if (graphData is null) return;
+            if (graphData == null) return;
             // Generate all nodes
+            graphData.AllGroups.RemoveAll(x => x == null);
+            graphData.AllNodes.RemoveAll(x => x == null);
             foreach (DSNodeData nodeData in graphData.AllNodes)
             {
                 switch (nodeData)
@@ -191,6 +195,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
 
         public void SaveGraph()
         {
+            if (_dsEditorWindow.GraphData == null) return;
             ClearGraphData();
             IEnumerable<IDSGraphSavable> allElements = graphElements.OfType<IDSGraphSavable>();
             foreach (IDSGraphSavable element in allElements)
@@ -207,6 +212,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
                 }
                 element.Save();
             }
+            AssetDatabase.SaveAssets();
         }
 
         void ClearGraphData() => _dsEditorWindow.GraphData.PlaceAllDataInRemoved();

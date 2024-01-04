@@ -102,6 +102,7 @@ namespace KorYmeLibrary.DialogueSystem
             Edge edge = port.connections.FirstOrDefault();
             if (edge != null)
             {
+                edge.input?.DisconnectAll();
                 _graphView.RemoveElement(edge);
             }
             port.DisconnectAll();

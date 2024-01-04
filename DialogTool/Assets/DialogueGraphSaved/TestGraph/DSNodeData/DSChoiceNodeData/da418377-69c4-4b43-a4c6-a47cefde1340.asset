@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1cd4e86ae6f2cb5458e51aec6e5db5dd, type: 3}
-  m_Name: 1944ad3f-0d79-4450-a525-af28f143680f
+  m_Name: da418377-69c4-4b43-a4c6-a47cefde1340
   m_EditorClassIdentifier: 
-  <ID>k__BackingField: 1944ad3f-0d79-4450-a525-af28f143680f
+  <ID>k__BackingField: da418377-69c4-4b43-a4c6-a47cefde1340
   <Position>k__BackingField: {x: 0, y: 0}
   <NodeName>k__BackingField: New Node
   <DialogueText>k__BackingField: Random dialogue !?

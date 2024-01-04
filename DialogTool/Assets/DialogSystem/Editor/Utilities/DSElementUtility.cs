@@ -86,6 +86,7 @@ namespace KorYmeLibrary.DialogueSystem.Utilities
             {
                 label = labelValue,
                 value = initialValue,
+                
             };
             toggle.RegisterValueChangedCallback(callback);
             return toggle;

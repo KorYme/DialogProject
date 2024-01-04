@@ -1,17 +1,29 @@
-using KorYmeLibrary.DialogueSystem.Utilities;
 using System;
-using UnityEditor;
-using UnityEngine.UIElements;
-using UnityEditor.UIElements;
 using UnityEngine;
-using System.Linq;
+using UnityEngine.UIElements;
+using UnityEditor;
+using UnityEditor.UIElements;
+using KorYmeLibrary.DialogueSystem.Utilities;
 
 namespace KorYmeLibrary.DialogueSystem.Windows
 {
     public class DSEditorWindow : EditorWindow
     {
+        DSDialogueGraphWindowData _dsDialogueGraphWindowData;
+        public DSDialogueGraphWindowData WindowData
+        {
+            get
+            {
+                if (_dsDialogueGraphWindowData == null)
+                {
+                    _dsDialogueGraphWindowData = GraphSaveHandler.GetOrGenerateNewWindowData();
+                }
+                return _dsDialogueGraphWindowData;
+            }
+        }
+
+        DSGraphView _graphView;
         DSGraphData _graphData;
-        event Action<bool> _onGraphDataChange;
         public DSGraphData GraphData
         {
             get => _graphData;
@@ -19,23 +31,22 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             {
                 if (value != _graphData)
                 {
+                    if (WindowData.IsSaveOnLoad)
+                    {
+                        _graphView?.SaveGraph();
+                    }
                     GraphData?.DeleteAllRemovedData();
                     _graphData = value;
                     _onGraphDataChange?.Invoke(value != null);
+                    LoadData();
                 }
             }
         }
-
-        event Action<string> _onFileNameChange;
-        public string FileName { get; private set; }
-
-        event Action<bool> _onMiniMapVisibilityChanged;
-
-        DSGraphView _graphView;
-
-        private bool _saveOnLoad;
-
         public DSGraphSaveHandler GraphSaveHandler { get; private set; }
+
+        event Action<bool> _onGraphDataChange;
+        event Action<string> _onFileNameChange;
+        event Action<bool> _onMiniMapVisibilityChanged;
 
         [MenuItem("Window/Dialog System/Dialogue Graph")]
         public static void OpenGraphWindow()
@@ -46,6 +57,8 @@ namespace KorYmeLibrary.DialogueSystem.Windows
         private void OnEnable()
         {
             GraphSaveHandler = new DSGraphSaveHandler();
+            _graphData = WindowData.LastGraphData;
+            _onGraphDataChange += ChangeGraphDataInWindowData;
             AddGraphView();
             AddToolbar();
             AddStyles();
@@ -54,7 +67,15 @@ namespace KorYmeLibrary.DialogueSystem.Windows
 
         private void OnDisable()
         {
-            GraphData?.DeleteAllRemovedData();
+            GraphData = null;
+        }
+
+        private void ChangeGraphDataInWindowData(bool graphDataIsNotNull)
+        {
+            if (graphDataIsNotNull)
+            {
+                WindowData.LastGraphData = GraphData;
+            }
         }
 
         private void AddGraphView()
@@ -75,35 +96,31 @@ namespace KorYmeLibrary.DialogueSystem.Windows
 
             ObjectField graphFileField = DSElementUtility.CreateObjectField("Graph File :", typeof(DSGraphData), GraphData, ChangeGraphDataFile);
             Button saveButton = DSElementUtility.CreateButton("Save", SaveData);
-            Button loadButton = DSElementUtility.CreateButton("Load", LoadData);
             Button clearButton = DSElementUtility.CreateButton("Clear", ClearGraph);
-            TextField fileNameTextfield = DSElementUtility.CreateTextField(FileName, "New File Name :", ChangeFileName);
+            Toggle autoSavetoggle = DSElementUtility.CreateToggle(WindowData.IsSaveOnLoad ,"Save on Load :", ChangeSaveOnLoad);
+            TextField fileNameTextfield = DSElementUtility.CreateTextField(WindowData.FileName, "New File Name :", ChangeFileName);
             Button newGraphButton = DSElementUtility.CreateButton("New Graph", GenerateNewGraph);
             Button miniMapButton = DSElementUtility.CreateButton("Mini Map", ToggleMiniMap);
 
             saveButton.SetEnabled(GraphData != null);
             _onGraphDataChange += saveButton.SetEnabled;
-            loadButton.SetEnabled(GraphData != null);
-            _onGraphDataChange += loadButton.SetEnabled;
+            if (WindowData.IsMinimapVisible)
+            {
+                _graphView.ToggleMinimapVisibility();
+                miniMapButton.AddClasses("ds-toolbar__button__selected");
+            }
             _onMiniMapVisibilityChanged += x => miniMapButton.ToggleInClassList("ds-toolbar__button__selected");
 
             _onGraphDataChange += x => graphFileField.SetValueWithoutNotify(GraphData);
             _onFileNameChange += fileNameTextfield.SetValueWithoutNotify;
 
-            toolbar.Add(graphFileField, saveButton, loadButton, clearButton, fileNameTextfield, newGraphButton, miniMapButton);
+            toolbar.Add(graphFileField, saveButton, clearButton, autoSavetoggle, fileNameTextfield, newGraphButton, miniMapButton);
             toolbar.AddStyleSheets("Assets/DialogSystem/Editor Default Resources/DSToolbarStyles.uss");
             rootVisualElement.Add(toolbar);
         }
 
     #region TOOLBAR_METHODS
-        private void ChangeGraphDataFile(ChangeEvent<UnityEngine.Object> callbackData)
-        {
-            if (true)
-            {
-
-            }
-            GraphData = callbackData.newValue as DSGraphData;
-        }
+        private void ChangeGraphDataFile(ChangeEvent<UnityEngine.Object> callbackData) => GraphData = callbackData.newValue as DSGraphData;
 
         private void SaveData()
         {
@@ -119,30 +136,25 @@ namespace KorYmeLibrary.DialogueSystem.Windows
 
         private void LoadData()
         {
-            _graphView?.ClearGraph();
+            ClearGraph();
             _graphView?.LoadGraph(GraphData);
         }
 
-        private void ClearGraph()
-        {
-            _graphView?.ClearGraph();
-        }
-
-        private void ChangeFileName(ChangeEvent<string> callbackData)
-        {
-            FileName = callbackData.newValue;
-        }
+        private void ClearGraph() => _graphView?.ClearGraph();
+        
+        private void ChangeSaveOnLoad(ChangeEvent<bool> callbackData) => WindowData.IsSaveOnLoad = callbackData.newValue;
+        private void ChangeFileName(ChangeEvent<string> callbackData) => WindowData.FileName = callbackData.newValue;
 
         private void GenerateNewGraph()
         {
-            if (!FileName.IsSerializableFriendly())
+            if (!WindowData.FileName.IsSerializableFriendly())
             {
-                Debug.LogWarning($"The file name \"{FileName}\" could not be serialized, all non serializable characters have been removed.");
-                FileName = FileName.RemoveNonSerializableCharacters();
-                _onFileNameChange?.Invoke(FileName);
+                Debug.LogWarning($"The file name \"{WindowData.FileName}\" could not be serialized, all non serializable characters have been removed.");
+                WindowData.FileName = WindowData.FileName.RemoveNonSerializableCharacters();
+                _onFileNameChange?.Invoke(WindowData.FileName);
                 return;
             }
-            DSGraphData newGraphData = GraphSaveHandler.GenerateGraphFile(FileName);
+            DSGraphData newGraphData = GraphSaveHandler.GenerateGraphDataFile(WindowData.FileName);
             if (newGraphData != null)
             {
                 GraphData = newGraphData;
@@ -152,8 +164,8 @@ namespace KorYmeLibrary.DialogueSystem.Windows
 
         private void ToggleMiniMap()
         {
-            bool minimapVisibility = _graphView.ToggleMinimapVisibility();
-            _onMiniMapVisibilityChanged?.Invoke(minimapVisibility);
+            WindowData.IsMinimapVisible = _graphView.ToggleMinimapVisibility();
+            _onMiniMapVisibilityChanged?.Invoke(WindowData.IsMinimapVisible);
         }
     }
     #endregion

@@ -9,10 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 889c79d51f7a48746a879a262498e0a0, type: 3}
-  m_Name: e828b9fa-4532-40b0-b3ab-1124ec54b604
+  m_Script: {fileID: 11500000, guid: 844ef38d8e027c94aa605beda11e3703, type: 3}
+  m_Name: DialogueGraphWindowData
   m_EditorClassIdentifier: 
-  <ID>k__BackingField: e828b9fa-4532-40b0-b3ab-1124ec54b604
-  <Position>k__BackingField: {x: 0, y: 0}
-  <Title>k__BackingField: HEY
-  <ChildrenNodes>k__BackingField: []
+  <IsSaveOnLoad>k__BackingField: 0
+  <IsMinimapVisible>k__BackingField: 0
+  <FileName>k__BackingField: 
+  <LastGraphData>k__BackingField: {fileID: 0}

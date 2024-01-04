@@ -8,6 +8,7 @@ Toolbar
 TextField
 {
 	padding: var(--ds-metrics-window-pixels-4);
+	padding: var(--ds-metrics-window-pixels-4);
 }
 
 ObjectField
@@ -15,6 +16,18 @@ ObjectField
 	padding: var(--ds-metrics-window-pixels-4);
 	margin: var(--ds-metrics-window-pixels-4);
 	width: var(--ds-metrics-window-pixels-360)
+}
+
+Toggle
+{
+	padding: var(--ds-metrics-window-pixels-4);
+	margin: var(--ds-metrics-window-pixels-4);
+}
+
+Toggle > .unity-toggle__label {
+    min-width: var(--ds-metrics-window-pixels-0);
+	padding-top : 1px;
+	padding-right: var(--ds-metrics-window-pixels-11);
 }
 
 Button
@@ -51,6 +64,12 @@ ObjectField:focus > .unity-text-field__label
 {
 	color: var(--ds-colors-window-yellow);
 }
+
+Toggle:focus > .unity-text-field__label
+{
+	color: var(--ds-colors-window-yellow);
+}
+
 
 .unity-text-field__input
 {

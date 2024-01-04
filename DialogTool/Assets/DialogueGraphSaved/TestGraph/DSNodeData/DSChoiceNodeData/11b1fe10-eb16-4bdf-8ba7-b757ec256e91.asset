@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1cd4e86ae6f2cb5458e51aec6e5db5dd, type: 3}
-  m_Name: c222d035-0d03-44ec-98a8-ca072f4d6eb9
+  m_Name: 11b1fe10-eb16-4bdf-8ba7-b757ec256e91
   m_EditorClassIdentifier: 
-  <ID>k__BackingField: c222d035-0d03-44ec-98a8-ca072f4d6eb9
-  <Position>k__BackingField: {x: 205, y: 110}
+  <ID>k__BackingField: 11b1fe10-eb16-4bdf-8ba7-b757ec256e91
+  <Position>k__BackingField: {x: 0, y: 0}
   <NodeName>k__BackingField: New Node
-  <DialogueText>k__BackingField: Salut
+  <DialogueText>k__BackingField: Random dialogue !?
   <OutputNodes>k__BackingField:
   - <ChoiceText>k__BackingField: New Choice
     <InputPortConnected>k__BackingField: {fileID: 0}

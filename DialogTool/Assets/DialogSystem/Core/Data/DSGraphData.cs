@@ -17,6 +17,7 @@ namespace KorYmeLibrary.DialogueSystem
             AllRemovedElements.AddRange(AllGroups);
             AllNodes.Clear();
             AllGroups.Clear();
+            AllRemovedElements.RemoveAll(x => x is null);
         }
 
         public void DeleteAllRemovedData()
