@@ -79,5 +79,16 @@ namespace KorYmeLibrary.DialogueSystem.Utilities
             }
             return objectField;
         }
+
+        public static Toggle CreateToggle(bool initialValue = false, string labelValue = null, EventCallback<ChangeEvent<bool>> callback = null)
+        {
+            Toggle toggle = new Toggle()
+            {
+                label = labelValue,
+                value = initialValue,
+            };
+            toggle.RegisterValueChangedCallback(callback);
+            return toggle;
+        }
     }
 }

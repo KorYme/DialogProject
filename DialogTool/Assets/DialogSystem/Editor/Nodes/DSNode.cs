@@ -74,14 +74,16 @@ namespace KorYmeLibrary.DialogueSystem
 
         protected virtual void DrawMainContainer()
         {
+            Foldout scriptableReferenceFoldout = DSElementUtility.CreateFoldout("Scriptable Reference", true);
             ObjectField dataScriptable = DSElementUtility.CreateObjectField(null, typeof(DSNodeData), NodeData);
             dataScriptable.SetEnabled(false);
-            mainContainer.Insert(1, dataScriptable);
+            scriptableReferenceFoldout.Add(dataScriptable);
+            mainContainer.Insert(1, scriptableReferenceFoldout);
         }
 
         protected virtual void DrawInputContainer()
         {
-            InputPort = this.CreatePort(null, "Dialogue Connection", direction: Direction.Input, capacity: Port.Capacity.Multi);
+            InputPort = this.CreatePort(NodeData.ID, "Dialogue Connection", direction: Direction.Input, capacity: Port.Capacity.Multi);
             inputContainer.Add(InputPort);
         }
 

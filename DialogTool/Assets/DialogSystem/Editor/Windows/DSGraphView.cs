@@ -1,15 +1,10 @@
-using KorYmeLibrary.DialogueSystem.Utilities;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using UnityEditor;
-using UnityEditor.Animations;
-using UnityEditor.Experimental.GraphView;
-using UnityEditor.UI;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEditor.Experimental.GraphView;
+using KorYmeLibrary.DialogueSystem.Utilities;
 
 namespace KorYmeLibrary.DialogueSystem.Windows
 {
@@ -39,6 +34,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             _miniMap = new MiniMap()
             {
                 anchored = true,
+                visible = false,
             };
             _miniMap.SetPosition(new Rect(15, 50, 200, 125));
             Add(_miniMap);
@@ -152,10 +148,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             Insert(0, gridBackground);
         }
 
-        public void ClearGraph()
-        {
-            DeleteElements(graphElements);
-        }
+        public void ClearGraph() => DeleteElements(graphElements);
 
         public bool ToggleMinimapVisibility()
         {
@@ -169,7 +162,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
         #endregion
 
         #region SAVE_AND_LOAD_METHODS
-        public void LoadGraphData(DSGraphData graphData)
+        public void LoadGraph(DSGraphData graphData)
         {
             if (graphData is null) return;
             // Generate all nodes
@@ -194,7 +187,6 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             {
                 item.InitializeEdgeConnections(_AllDSNodes);
             }
-            
         }
 
         public void SaveGraph()
@@ -206,11 +198,9 @@ namespace KorYmeLibrary.DialogueSystem.Windows
                 switch (element)
                 {
                     case DSChoiceNode choiceNode:
-                        SaveDataInProject(choiceNode.ChoiceNodeData);
                         AddToNodes(choiceNode.ChoiceNodeData);
                         break;
-                    case DSGroup group: 
-                        SaveDataInProject(group.GroupData); 
+                    case DSGroup group:
                         AddToGroups(group.GroupData);
                         break;
                     default: break;
@@ -219,24 +209,26 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             }
         }
 
-        void ClearGraphData()
-        {
-            _dsEditorWindow.GraphData.AllNodes.Clear();
-            _dsEditorWindow.GraphData.AllGroups.Clear();
-        }
+        void ClearGraphData() => _dsEditorWindow.GraphData.PlaceAllDataInRemoved();
 
         void SaveDataInProject<T>(T elementData) where T : DSElementData
             => _dsEditorWindow.GraphSaveHandler.SaveDataInProject(elementData, _dsEditorWindow.GraphData.name);
 
-        void AddToNodes(DSNodeData nodeData)
+        void AddToNodes<T>(T nodeData) where T : DSNodeData
         {
-            if (_dsEditorWindow.GraphData.AllNodes.Contains(nodeData)) return;
+            if (!_dsEditorWindow.GraphData.AllRemovedElements.Remove(nodeData))
+            {
+                SaveDataInProject(nodeData);
+            }
             _dsEditorWindow.GraphData.AllNodes.Add(nodeData);
         }
 
-        void AddToGroups(DSGroupData groupData)
+        void AddToGroups<T>(T groupData) where T : DSGroupData
         {
-            if (_dsEditorWindow.GraphData.AllGroups.Contains(groupData)) return;
+            if (!_dsEditorWindow.GraphData.AllRemovedElements.Remove(groupData))
+            {
+                SaveDataInProject(groupData);
+            }
             _dsEditorWindow.GraphData.AllGroups.Add(groupData);
         }
         #endregion

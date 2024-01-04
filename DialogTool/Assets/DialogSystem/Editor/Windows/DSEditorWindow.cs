@@ -19,6 +19,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             {
                 if (value != _graphData)
                 {
+                    GraphData?.DeleteAllRemovedData();
                     _graphData = value;
                     _onGraphDataChange?.Invoke(value != null);
                 }
@@ -31,6 +32,9 @@ namespace KorYmeLibrary.DialogueSystem.Windows
         event Action<bool> _onMiniMapVisibilityChanged;
 
         DSGraphView _graphView;
+
+        private bool _saveOnLoad;
+
         public DSGraphSaveHandler GraphSaveHandler { get; private set; }
 
         [MenuItem("Window/Dialog System/Dialogue Graph")]
@@ -46,6 +50,11 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             AddToolbar();
             AddStyles();
             LoadData();
+        }
+
+        private void OnDisable()
+        {
+            GraphData?.DeleteAllRemovedData();
         }
 
         private void AddGraphView()
@@ -76,8 +85,10 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             _onGraphDataChange += saveButton.SetEnabled;
             loadButton.SetEnabled(GraphData != null);
             _onGraphDataChange += loadButton.SetEnabled;
+            _onMiniMapVisibilityChanged += x => miniMapButton.ToggleInClassList("ds-toolbar__button__selected");
+
+            _onGraphDataChange += x => graphFileField.SetValueWithoutNotify(GraphData);
             _onFileNameChange += fileNameTextfield.SetValueWithoutNotify;
-            //_onMiniMapVisibilityChanged += miniMapButton.;
 
             toolbar.Add(graphFileField, saveButton, loadButton, clearButton, fileNameTextfield, newGraphButton, miniMapButton);
             toolbar.AddStyleSheets("Assets/DialogSystem/Editor Default Resources/DSToolbarStyles.uss");
@@ -87,6 +98,10 @@ namespace KorYmeLibrary.DialogueSystem.Windows
     #region TOOLBAR_METHODS
         private void ChangeGraphDataFile(ChangeEvent<UnityEngine.Object> callbackData)
         {
+            if (true)
+            {
+
+            }
             GraphData = callbackData.newValue as DSGraphData;
         }
 
@@ -104,11 +119,8 @@ namespace KorYmeLibrary.DialogueSystem.Windows
 
         private void LoadData()
         {
-            if (GraphData != null)
-            {
-                _graphView?.ClearGraph();
-                _graphView?.LoadGraphData(GraphData);
-            }
+            _graphView?.ClearGraph();
+            _graphView?.LoadGraph(GraphData);
         }
 
         private void ClearGraph()

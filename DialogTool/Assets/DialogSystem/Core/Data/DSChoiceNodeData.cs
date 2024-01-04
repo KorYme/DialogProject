@@ -5,7 +5,7 @@ namespace KorYmeLibrary.DialogueSystem
 {
     public class DSChoiceNodeData : DSNodeData
     {
-        [field: SerializeField] public string DialogueText { get; set; } = "Random dialogue !?";
+        [field: SerializeField][field: TextArea(3,10)] public string DialogueText { get; set; } = "Random dialogue !?";
         [field: SerializeField] public List<ChoicePortData> OutputNodes { get; set; } = new List<ChoicePortData>()
         {
             new ChoicePortData(),

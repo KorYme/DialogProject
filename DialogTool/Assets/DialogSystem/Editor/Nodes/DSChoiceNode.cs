@@ -5,7 +5,6 @@ using UnityEditor.Experimental.GraphView;
 using KorYmeLibrary.DialogueSystem.Utilities;
 using KorYmeLibrary.DialogueSystem.Windows;
 using System;
-using Unity.VisualScripting;
 using System.Linq;
 
 namespace KorYmeLibrary.DialogueSystem
@@ -56,6 +55,7 @@ namespace KorYmeLibrary.DialogueSystem
                 "ds-node__text-field",
                 "ds-node__quote-text-field"
             );
+            textTextField.multiline = true;
             textFoldout.Add(textTextField);
             customDataContainer.Add(textFoldout);
             extensionContainer.Add(customDataContainer);
@@ -93,12 +93,18 @@ namespace KorYmeLibrary.DialogueSystem
             {
                 Port otherPort = nodes.FirstOrDefault(node => node.NodeData.ID == port.name)?.InputPort ?? null;
                 if (otherPort is null) return;
-                port.ConnectTo(otherPort);
+                _graphView.AddElement(port.ConnectTo(otherPort));
             }
         }
 
         private void RemoveChoicePort(Port port)
         {
+            Edge edge = port.connections.FirstOrDefault();
+            if (edge != null)
+            {
+                _graphView.RemoveElement(edge);
+            }
+            port.DisconnectAll();
             outputContainer.Remove(port);
         }
 
