@@ -1,18 +1,21 @@
+using System;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor.Experimental.GraphView;
 using KorYmeLibrary.DialogueSystem.Utilities;
 using KorYmeLibrary.DialogueSystem.Windows;
-using System;
-using System.Linq;
+using KorYmeLibrary.DialogueSystem.Interfaces;
 
 namespace KorYmeLibrary.DialogueSystem
 {
-    public class DSChoiceNode : DSNode, IDSGraphSavable
+    public class DSChoiceNode : DSNode, IGraphSavable
     {
         public DSChoiceNodeData ChoiceNodeData => NodeData as DSChoiceNodeData;
         Action _savePortsAction = null;
+
+        public DSChoiceNode() { }
 
         public DSChoiceNode(DSGraphView graphView, Vector2 position) : base(graphView, position)
         {
@@ -22,7 +25,12 @@ namespace KorYmeLibrary.DialogueSystem
         {
         }
 
-        protected override void InitializeData()
+        public void InitializeElement(DSGraphView graphView, DSChoiceNodeData data)
+        {
+            base.InitializeElement(graphView, data);
+        }
+
+        protected override void InitializeNodeData()
         {
             NodeData = ScriptableObject.CreateInstance<DSChoiceNodeData>();
             NodeData.ID = Guid.NewGuid().ToString();

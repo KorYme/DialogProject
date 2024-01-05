@@ -1,24 +1,27 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using KorYmeLibrary.DialogueSystem.Utilities;
-using UnityEditor;
-using Unity.VisualScripting;
+using KorYmeLibrary.DialogueSystem.Interfaces;
 
 namespace KorYmeLibrary.DialogueSystem.Windows
 {
     public class DSGraphView : GraphView
     {
+        #region PROPERTIES_AND_FIELDS
         DSSearchWindow _searchWindow;
         MiniMap _miniMap;
         DSEditorWindow _dsEditorWindow;
 
         IEnumerable<DSNode> _AllDSNodes => nodes.OfType<DSNode>();
         IEnumerable<DSChoiceNode> _AllDSChoiceNodes => nodes.OfType<DSChoiceNode>();
+        #endregion
 
+        #region CONSTRUCTOR
         public DSGraphView(DSEditorWindow dsEditorWindow)
         {
             _dsEditorWindow = dsEditorWindow;
@@ -27,10 +30,11 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             AddMinimap();
             AddStyles();
             AddMiniMapStyles();
-            AddGraphViewChangeCallback();
             AddGridBackground();
         }
+        #endregion
 
+        #region MAIN_ELEMENTS_METHODS
         private void AddMinimap()
         {
             _miniMap = new MiniMap()
@@ -42,6 +46,12 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             Add(_miniMap);
         }
 
+        public bool ToggleMinimapVisibility()
+        {
+            _miniMap.visible = !_miniMap.visible;
+            return _miniMap.visible;
+        }
+
         private void AddManipulators()
         {
             SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
@@ -49,86 +59,6 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             this.AddManipulator(new SelectionDragger());
             this.AddManipulator(new RectangleSelector());
         }
-
-        public IManipulator GenerateContextMenuManipulator(string funcName, Func<Vector2, GraphElement> func)
-            => new ContextualMenuManipulator(menuEvent => 
-            menuEvent.menu.AppendAction(funcName, action => 
-            func(GetLocalMousePosition(action.eventInfo.localMousePosition))));
-
-        public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
-        {
-            DSNode node = evt.target as DSNode;
-            if (node is not null)
-            {
-                evt.menu.AppendAction("Disconnect All Inputs Ports", action => node.DisconnectAllPorts(node.inputContainer));
-                evt.menu.AppendAction("Disconnect All Output Ports", action => node.DisconnectAllPorts(node.outputContainer));
-            }
-            base.BuildContextualMenu(evt);
-        }
-        
-
-        public DSChoiceNode CreateAndAddChoiceNode(Vector2 position)
-        {
-            DSChoiceNode choiceNode = new DSChoiceNode(this, position);
-            choiceNode.Draw();
-            AddElement(choiceNode);
-            return choiceNode;
-        }
-
-        public DSChoiceNode CreateAndAddChoiceNode(DSChoiceNodeData data)
-        {
-            DSChoiceNode choiceNode = new DSChoiceNode(this, data);
-            choiceNode.Draw();
-            AddElement(choiceNode);
-            return choiceNode;
-        }
-
-        public DSGroup CreateAndAddGroup(Vector2 position, IEnumerable<GraphElement> allChildren = null)
-        {
-            DSGroup group = new DSGroup(position)
-            {
-                title = "New_Group",
-            };
-            group.AddElements((allChildren is null ? selection.OfType<DSNode>() : allChildren));
-            AddElement(group);
-            return group;
-        }
-
-        public DSGroup CreateAndAddGroup(DSGroupData data, IEnumerable<GraphElement> allChildren = null)
-        {
-            DSGroup group = new DSGroup(data)
-            {
-                title = "New_Group",
-            };
-            group.AddElements((allChildren is null ? selection.OfType<GraphElement>() : allChildren));
-            AddElement(group);
-            return group;
-        }
-
-        void AddGraphViewChangeCallback()
-        {
-            graphViewChanged = change =>
-            {
-                return change;
-            };
-        }
-
-        private void AddStyles() => this.AddStyleSheets(
-            "Assets/DialogSystem/Editor Default Resources/DSGraphViewStyles.uss",
-            "Assets/DialogSystem/Editor Default Resources/DSNodeStyles.uss"
-        );
-
-        private void AddMiniMapStyles()
-        {
-            _miniMap.style.backgroundColor = new StyleColor(new Color32(29,29,29,255));
-            _miniMap.style.borderBottomColor = new StyleColor(new Color32(51,51,51,255));
-            _miniMap.style.borderTopColor = new StyleColor(new Color32(51,51,51,255));
-            _miniMap.style.borderLeftColor = new StyleColor(new Color32(51,51,51,255));
-            _miniMap.style.borderRightColor = new StyleColor(new Color32(51,51,51,255));
-        }
-
-        public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
-            => ports.Where(port => port.node != startPort.node && port.direction != startPort.direction).ToList();
 
         private void AddSearchWindow()
         {
@@ -151,16 +81,65 @@ namespace KorYmeLibrary.DialogueSystem.Windows
         }
 
         public void ClearGraph() => DeleteElements(graphElements);
+        #endregion
 
-        public bool ToggleMinimapVisibility()
+        #region CONTEXT_MENU_METHODS
+        public IManipulator GenerateContextMenuManipulator(string funcName, Func<Vector2, GraphElement> func)
+            => new ContextualMenuManipulator(menuEvent => 
+            menuEvent.menu.AppendAction(funcName, action => 
+            func(GetLocalMousePosition(action.eventInfo.localMousePosition))));
+
+        public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
         {
-            _miniMap.visible = !_miniMap.visible;
-            return _miniMap.visible;
+            switch (evt.target)
+            {
+                case DSNode node:
+                    evt.menu.AppendAction("Disconnect All Inputs Ports", action => node.DisconnectAllPorts(node.inputContainer));
+                    evt.menu.AppendAction("Disconnect All Output Ports", action => node.DisconnectAllPorts(node.outputContainer));
+                    break;
+                default:
+                    break;
+            }
+            base.BuildContextualMenu(evt);
+        }
+        #endregion
+
+        #region NODES_AND_GROUPS_CREATION_METHODS
+        public T CreateAndAddChoiceNode<T>(Vector2 position) where T : DSNode, new()
+        {
+            T node = new T();
+            node.InitializeElement(this, position);
+            node.Draw();
+            AddElement(node);
+            return node;
         }
 
-        #region UTILITIES
-        public Vector2 GetLocalMousePosition(Vector2 mousePosition, bool isSearchWindow = false) => 
-            contentContainer.WorldToLocal(mousePosition - (isSearchWindow ? _dsEditorWindow.position.position : Vector2.zero));
+        public T CreateAndAddChoiceNode<T,Y>(Y data) where T: DSNode, new() where Y : DSNodeData, new()
+        {
+            T node = new T();
+            node.InitializeElement(this, data);
+            node.Draw();
+            AddElement(node);
+            return node;
+        }
+
+        public T CreateAndAddGroup<T>(Vector2 position, IEnumerable<GraphElement> allChildren = null) where T : DSGroup, new()
+        {
+            T group = new T();
+            group.InitializeElement(position);
+            group.AddElements((allChildren is null ? selection.OfType<DSNode>() : allChildren));
+            AddElement(group);
+            return group;
+        }
+
+        public T CreateAndAddGroup<T>(DSGroupData data, IEnumerable<GraphElement> allChildren = null) where T : DSGroup, new()
+        {
+            T group = new T();
+            group.InitializeElement(data);
+            group.AddElements((allChildren is null ? selection.OfType<GraphElement>() : allChildren));
+            AddElement(group);
+            return group;
+        }
         #endregion
 
         #region SAVE_AND_LOAD_METHODS
@@ -175,7 +154,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
                 switch (nodeData)
                 {
                     case DSChoiceNodeData choiceNodeData:
-                        CreateAndAddChoiceNode(choiceNodeData);
+                        CreateAndAddChoiceNode<DSChoiceNode, DSChoiceNodeData>(choiceNodeData);
                         break;
                     default:
                         break;
@@ -184,7 +163,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             // Generate all groups
             foreach (DSGroupData group in graphData.AllGroups)
             {
-                CreateAndAddGroup(group, _AllDSNodes.Where(dsNode => group.ChildrenNodes.Contains(dsNode.NodeData)));
+                CreateAndAddGroup<DSGroup>(group, _AllDSNodes.Where(dsNode => group.ChildrenNodes.Contains(dsNode.NodeData)));
             }
             // Link all Choice Nodes
             foreach (DSChoiceNode item in _AllDSChoiceNodes)
@@ -197,8 +176,8 @@ namespace KorYmeLibrary.DialogueSystem.Windows
         {
             if (_dsEditorWindow.GraphData == null) return;
             ClearGraphData();
-            IEnumerable<IDSGraphSavable> allElements = graphElements.OfType<IDSGraphSavable>();
-            foreach (IDSGraphSavable element in allElements)
+            IEnumerable<IGraphSavable> allElements = graphElements.OfType<IGraphSavable>();
+            foreach (IGraphSavable element in allElements)
             {
                 switch (element)
                 {
@@ -237,6 +216,32 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             }
             _dsEditorWindow.GraphData.AllGroups.Add(groupData);
         }
+        #endregion
+
+        #region STYLES_ADDITION_METHODS
+        private void AddStyles() => this.AddStyleSheets(
+            "Assets/DialogSystem/Editor Default Resources/DSGraphViewStyles.uss",
+            "Assets/DialogSystem/Editor Default Resources/DSNodeStyles.uss"
+        );
+
+        private void AddMiniMapStyles()
+        {
+            _miniMap.style.backgroundColor = new StyleColor(new Color32(29,29,29,255));
+            _miniMap.style.borderBottomColor = new StyleColor(new Color32(51,51,51,255));
+            _miniMap.style.borderTopColor = new StyleColor(new Color32(51,51,51,255));
+            _miniMap.style.borderLeftColor = new StyleColor(new Color32(51,51,51,255));
+            _miniMap.style.borderRightColor = new StyleColor(new Color32(51,51,51,255));
+        }
+        #endregion
+
+        #region OVERRIDED_METHODS
+        public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
+            => ports.Where(port => port.node != startPort.node && port.direction != startPort.direction).ToList();
+        #endregion
+
+        #region UTILITIES
+        public Vector2 GetLocalMousePosition(Vector2 mousePosition, bool isSearchWindow = false) => 
+            contentContainer.WorldToLocal(mousePosition - (isSearchWindow ? _dsEditorWindow.position.position : Vector2.zero));
         #endregion
     }
 }

@@ -3,19 +3,23 @@ using System.IO;
 using UnityEngine;
 using UnityEditor;
 using KorYmeLibrary.DialogueSystem.Windows;
-using System.Linq;
 
 namespace KorYmeLibrary.DialogueSystem.Utilities
 {
     public class DSGraphSaveHandler
     {
+        #region CONSTANTS
         readonly static string DS_MAIN_FOLDER_PATH = Path.Combine("Assets", "DialogueGraphSaved");
         readonly static string DS_WINDOW_DATA_FOLDER_PATH = Path.Combine(DS_MAIN_FOLDER_PATH, "_DialogueGraphWindowDataFolder");
+        #endregion
 
+        #region CONSTRUCTOR
         public DSGraphSaveHandler()
         {
         }
+        #endregion
 
+        #region ASSET_CREATION_METHODS
         public void GenerateDSRootFolder()
         {
             if (!Directory.Exists(DS_MAIN_FOLDER_PATH))
@@ -68,7 +72,9 @@ namespace KorYmeLibrary.DialogueSystem.Utilities
             Debug.LogWarning("A file named the same way already exist, please rename it before generating a new graph");
             return null;
         }
+        #endregion
 
+        #region SAVE_AND_LOAD_UTILITIES
         public bool SaveDataInProject<T>(T elementData, string graphName) where T : DSElementData
         {
             Type tmpType = typeof(T);
@@ -109,5 +115,6 @@ namespace KorYmeLibrary.DialogueSystem.Utilities
                 Debug.Log("The file in which the data should have been saved has been destroyed");
             }
         }
+        #endregion
     }
 }

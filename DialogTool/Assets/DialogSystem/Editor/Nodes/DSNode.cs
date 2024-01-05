@@ -1,23 +1,24 @@
-using UnityEditor.Experimental.GraphView;
+using System;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEditor.UIElements;
+using UnityEditor.Experimental.GraphView;
 using KorYmeLibrary.DialogueSystem.Utilities;
 using KorYmeLibrary.DialogueSystem.Windows;
-using System;
-using UnityEditor.UIElements;
+using KorYmeLibrary.DialogueSystem.Interfaces;
 
 namespace KorYmeLibrary.DialogueSystem
 {
-    public class DSNode : Node, IDSGraphSavable
+    public class DSNode : Node, IGraphSavable
     {
         public virtual DSNodeData NodeData { get; protected set; } 
         public Port InputPort {  get; protected set; }
 
-        protected DSGraphView _graphView;
+        protected DSGraphView _graphView;        
 
         public DSNode(DSGraphView graphView, Vector2 position)
         {
-            InitializeData();
+            InitializeNodeData();
             _graphView = graphView;
             SetPosition(new Rect(position, Vector2.zero));
             mainContainer.AddClasses("ds-node__main-container");
@@ -33,7 +34,27 @@ namespace KorYmeLibrary.DialogueSystem
             extensionContainer.AddClasses("ds-node__extension-container");
         }
 
-        protected virtual void InitializeData()
+        public DSNode() { }
+
+        public void InitializeElement(DSGraphView graphView, Vector2 position)
+        {
+            InitializeNodeData();
+            _graphView = graphView;
+            SetPosition(new Rect(position, Vector2.zero));
+            mainContainer.AddClasses("ds-node__main-container");
+            extensionContainer.AddClasses("ds-node__extension-container");
+        }
+
+        public void InitializeElement(DSGraphView graphView, DSNodeData data)
+        {
+            NodeData = data;
+            _graphView = graphView;
+            SetPosition(new Rect(data.Position, Vector2.zero));
+            mainContainer.AddClasses("ds-node__main-container");
+            extensionContainer.AddClasses("ds-node__extension-container");
+        }
+
+        protected virtual void InitializeNodeData()
         {
             NodeData = ScriptableObject.CreateInstance<DSNodeData>();
             NodeData.ID = Guid.NewGuid().ToString();
@@ -99,8 +120,6 @@ namespace KorYmeLibrary.DialogueSystem
                 port.DisconnectAll();
             }
         }
-
-        public void OpenSearchWindow() => _graphView.OpenSearchWindow(Vector2.zero);
 
         public virtual void Save()
         {

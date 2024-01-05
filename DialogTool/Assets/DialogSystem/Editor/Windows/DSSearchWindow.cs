@@ -1,20 +1,19 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Net.Mime;
-using System.Runtime.InteropServices.WindowsRuntime;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEditor.Experimental.GraphView;
 
 namespace KorYmeLibrary.DialogueSystem.Windows
 {
     public class DSSearchWindow : ScriptableObject, ISearchWindowProvider
     {
+        #region FIELDS_AND_CONSTANTS
         const bool IS_WINDOW_CLOSED_ON_ENTRY_SELECTED = true;
 
         DSGraphView _dsGraphView;
-
         Texture2D _spacingIcon;
+        #endregion
 
+        #region METHODS
         public void Initialize(DSGraphView graphView)
         {
             _dsGraphView = graphView;
@@ -22,7 +21,9 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             _spacingIcon.SetPixel(0, 0, Color.clear);
             _spacingIcon.Apply();
         }
+        #endregion
 
+        #region INTERFACE_METHODS
         public List<SearchTreeEntry> CreateSearchTree(SearchWindowContext context)
         {
             return new List<SearchTreeEntry>()
@@ -47,11 +48,12 @@ namespace KorYmeLibrary.DialogueSystem.Windows
         {
             switch (SearchTreeEntry.userData)
             {
-                case "DSChoiceNode": _dsGraphView.CreateAndAddChoiceNode(_dsGraphView.GetLocalMousePosition(context.screenMousePosition, true)); break;
-                case "DSGroup": _dsGraphView.CreateAndAddGroup(_dsGraphView.GetLocalMousePosition(context.screenMousePosition, true)); break;
+                case "DSChoiceNode": _dsGraphView.CreateAndAddChoiceNode<DSChoiceNode>(_dsGraphView.GetLocalMousePosition(context.screenMousePosition, true)); break;
+                case "DSGroup": _dsGraphView.CreateAndAddGroup<DSGroup>(_dsGraphView.GetLocalMousePosition(context.screenMousePosition, true)); break;
                 default: return false;
             }
             return IS_WINDOW_CLOSED_ON_ENTRY_SELECTED;
         }
+        #endregion
     }
 }

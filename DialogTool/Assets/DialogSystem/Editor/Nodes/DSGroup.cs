@@ -1,36 +1,39 @@
-using KorYmeLibrary.DialogueSystem.Utilities;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEditor.Experimental.GraphView;
+using KorYmeLibrary.DialogueSystem.Interfaces;
+using KorYmeLibrary.DialogueSystem.Windows;
 using UnityEngine.UIElements;
 
 namespace KorYmeLibrary.DialogueSystem
 {
-    public class DSGroup : Group, IDSGraphSavable
+    public class DSGroup : Group, IGraphSavable
     {
         public DSGroupData GroupData { get; protected set; }
 
-        public DSGroup(Vector2 position)
+        public DSGroup() { }
+
+        public void InitializeElement(DSGroupData groupData)
         {
-            InitializeGroupData();
-            InitializeData();
+            GroupData = groupData;
+            InitializeFieldsWithGroupData();
         }
 
-        public DSGroup(DSGroupData data)
+        public void InitializeElement(Vector2 position)
         {
-            GroupData = data;
-            InitializeData();
+            InitializeGroupData(position);
+            InitializeFieldsWithGroupData();
         }
-        
-        private void InitializeGroupData()
+
+        protected virtual void InitializeGroupData(Vector2 position)
         {
             GroupData = ScriptableObject.CreateInstance<DSGroupData>();
             GroupData.ID = Guid.NewGuid().ToString();
+            GroupData.Position = position;
         }
 
-        void InitializeData()
+        void InitializeFieldsWithGroupData()
         {
             SetPosition(new Rect(GroupData.Position, Vector2.zero));
             title = GroupData.Title;
