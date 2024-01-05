@@ -18,7 +18,6 @@ namespace KorYmeLibrary.DialogueSystem.Windows
         DSEditorWindow _dsEditorWindow;
 
         IEnumerable<DSNode> _AllDSNodes => nodes.OfType<DSNode>();
-        IEnumerable<DSChoiceNode> _AllDSChoiceNodes => nodes.OfType<DSChoiceNode>();
         #endregion
 
         #region CONSTRUCTOR
@@ -105,7 +104,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
         #endregion
 
         #region NODES_AND_GROUPS_CREATION_METHODS
-        public T CreateAndAddChoiceNode<T>(Vector2 position) where T : DSNode, new()
+        public T CreateAndAddNode<T>(Vector2 position) where T : DSNode, new()
         {
             T node = new T();
             node.InitializeElement(this, position);
@@ -114,7 +113,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             return node;
         }
 
-        public T CreateAndAddChoiceNode<T,Y>(Y data) where T: DSNode, new() where Y : DSNodeData, new()
+        public T CreateAndAddNode<T,Y>(Y data) where T: DSNode, new() where Y : DSNodeData, new()
         {
             T node = new T();
             node.InitializeElement(this, data);
@@ -154,9 +153,10 @@ namespace KorYmeLibrary.DialogueSystem.Windows
                 switch (nodeData)
                 {
                     case DSChoiceNodeData choiceNodeData:
-                        CreateAndAddChoiceNode<DSChoiceNode, DSChoiceNodeData>(choiceNodeData);
+                        CreateAndAddNode<DSChoiceNode, DSChoiceNodeData>(choiceNodeData);
                         break;
                     default:
+                        CreateAndAddNode<DSNode, DSNodeData>(nodeData);
                         break;
                 }
             }
@@ -165,24 +165,26 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             {
                 CreateAndAddGroup<DSGroup>(group, _AllDSNodes.Where(dsNode => group.ChildrenNodes.Contains(dsNode.NodeData)));
             }
-            // Link all Choice Nodes
-            foreach (DSChoiceNode item in _AllDSChoiceNodes)
+            // Link all nodes
+            foreach (DSNode node in _AllDSNodes)
             {
-                item.InitializeEdgeConnections(_AllDSNodes);
+                node.InitializeEdgeConnections(_AllDSNodes);
             }
         }
 
         public void SaveGraph()
         {
             if (_dsEditorWindow.GraphData == null) return;
+            // Place all nodes in the ready to remove part
             ClearGraphData();
+            // Check if the node still exist or if it needs to be instantiated as a scriptable object
             IEnumerable<IGraphSavable> allElements = graphElements.OfType<IGraphSavable>();
             foreach (IGraphSavable element in allElements)
             {
                 switch (element)
                 {
-                    case DSChoiceNode choiceNode:
-                        AddToNodes(choiceNode.ChoiceNodeData);
+                    case DSNode node:
+                        AddToNodes(node.NodeData);
                         break;
                     case DSGroup group:
                         AddToGroups(group.GroupData);

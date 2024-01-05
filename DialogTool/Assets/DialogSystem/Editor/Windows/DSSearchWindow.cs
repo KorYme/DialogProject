@@ -48,7 +48,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
         {
             switch (SearchTreeEntry.userData)
             {
-                case "DSChoiceNode": _dsGraphView.CreateAndAddChoiceNode<DSChoiceNode>(_dsGraphView.GetLocalMousePosition(context.screenMousePosition, true)); break;
+                case "DSChoiceNode": _dsGraphView.CreateAndAddNode<DSChoiceNode>(_dsGraphView.GetLocalMousePosition(context.screenMousePosition, true)); break;
                 case "DSGroup": _dsGraphView.CreateAndAddGroup<DSGroup>(_dsGraphView.GetLocalMousePosition(context.screenMousePosition, true)); break;
                 default: return false;
             }

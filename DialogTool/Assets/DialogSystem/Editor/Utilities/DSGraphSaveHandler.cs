@@ -77,7 +77,7 @@ namespace KorYmeLibrary.DialogueSystem.Utilities
         #region SAVE_AND_LOAD_UTILITIES
         public bool SaveDataInProject<T>(T elementData, string graphName) where T : DSElementData
         {
-            Type tmpType = typeof(T);
+            Type tmpType = elementData.GetType();
             string path = "";
             while (tmpType != typeof(DSElementData))
             {

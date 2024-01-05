@@ -95,16 +95,6 @@ namespace KorYmeLibrary.DialogueSystem
             return outputPort;
         }
 
-        public void InitializeEdgeConnections(IEnumerable<DSNode> nodes)
-        {
-            foreach (Port port in outputContainer.Children().OfType<Port>())
-            {
-                Port otherPort = nodes.FirstOrDefault(node => node.NodeData.ID == port.name)?.InputPort ?? null;
-                if (otherPort is null) return;
-                _graphView.AddElement(port.ConnectTo(otherPort));
-            }
-        }
-
         private void RemoveChoicePort(Port port)
         {
             Edge edge = port.connections.FirstOrDefault();

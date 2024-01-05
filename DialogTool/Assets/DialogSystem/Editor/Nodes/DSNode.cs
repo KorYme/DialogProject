@@ -6,6 +6,8 @@ using UnityEditor.Experimental.GraphView;
 using KorYmeLibrary.DialogueSystem.Utilities;
 using KorYmeLibrary.DialogueSystem.Windows;
 using KorYmeLibrary.DialogueSystem.Interfaces;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace KorYmeLibrary.DialogueSystem
 {
@@ -118,6 +120,16 @@ namespace KorYmeLibrary.DialogueSystem
             {
                 _graphView.DeleteElements(port.connections);
                 port.DisconnectAll();
+            }
+        }
+
+        public virtual void InitializeEdgeConnections(IEnumerable<DSNode> nodes)
+        {
+            foreach (Port port in outputContainer.Children().OfType<Port>())
+            {
+                Port otherPort = nodes.FirstOrDefault(node => node.NodeData.ID == port.name)?.InputPort ?? null;
+                if (otherPort is null) return;
+                _graphView.AddElement(port.ConnectTo(otherPort));
             }
         }
 
