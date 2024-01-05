@@ -9,8 +9,8 @@ namespace KorYmeLibrary.DialogueSystem.Utilities
     public class DSGraphSaveHandler
     {
         #region CONSTANTS
-        readonly static string DS_MAIN_FOLDER_PATH = Path.Combine("Assets", "DialogueGraphSaved");
-        readonly static string DS_WINDOW_DATA_FOLDER_PATH = Path.Combine(DS_MAIN_FOLDER_PATH, "_DialogueGraphWindowDataFolder");
+        readonly static string GRAPH_MAIN_FOLDER_PATH = Path.Combine("Assets", "DialogueGraphSaved");
+        readonly static string GRAPH_WINDOW_DATA_FOLDER_PATH = Path.Combine(GRAPH_MAIN_FOLDER_PATH, "_DialogueGraphWindowDataFolder");
         #endregion
 
         #region CONSTRUCTOR
@@ -22,13 +22,13 @@ namespace KorYmeLibrary.DialogueSystem.Utilities
         #region ASSET_CREATION_METHODS
         public void GenerateDSRootFolder()
         {
-            if (!Directory.Exists(DS_MAIN_FOLDER_PATH))
+            if (!Directory.Exists(GRAPH_MAIN_FOLDER_PATH))
             {
-                Directory.CreateDirectory(Path.Combine(DS_MAIN_FOLDER_PATH));
+                Directory.CreateDirectory(Path.Combine(GRAPH_MAIN_FOLDER_PATH));
             }
-            if (!Directory.Exists(DS_WINDOW_DATA_FOLDER_PATH))
+            if (!Directory.Exists(GRAPH_WINDOW_DATA_FOLDER_PATH))
             {
-                Directory.CreateDirectory(Path.Combine(DS_WINDOW_DATA_FOLDER_PATH));
+                Directory.CreateDirectory(Path.Combine(GRAPH_WINDOW_DATA_FOLDER_PATH));
                 AssetDatabase.Refresh();
             }
         }
@@ -36,7 +36,7 @@ namespace KorYmeLibrary.DialogueSystem.Utilities
         public DSDialogueGraphWindowData GetOrGenerateNewWindowData()
         {
             GenerateDSRootFolder();
-            string path = Path.Combine(DS_WINDOW_DATA_FOLDER_PATH, "DialogueGraphWindowData") + ".asset";
+            string path = Path.Combine(GRAPH_WINDOW_DATA_FOLDER_PATH, "DialogueGraphWindowData") + ".asset";
             if (!File.Exists(path))
             {
                 DSDialogueGraphWindowData windowGraphData = ScriptableObject.CreateInstance<DSDialogueGraphWindowData>();
@@ -57,14 +57,14 @@ namespace KorYmeLibrary.DialogueSystem.Utilities
                 return null;
             }
             GenerateDSRootFolder();
-            if (!File.Exists(Path.Combine(DS_MAIN_FOLDER_PATH, fileName) + ".asset"))
+            if (!File.Exists(Path.Combine(GRAPH_MAIN_FOLDER_PATH, fileName) + ".asset"))
             {
                 DSGraphData graphData = ScriptableObject.CreateInstance<DSGraphData>();
-                AssetDatabase.CreateAsset(graphData, Path.Combine(DS_MAIN_FOLDER_PATH, fileName) + ".asset");
+                AssetDatabase.CreateAsset(graphData, Path.Combine(GRAPH_MAIN_FOLDER_PATH, fileName) + ".asset");
                 AssetDatabase.SaveAssets();
-                if (!Directory.Exists(Path.Combine(DS_MAIN_FOLDER_PATH, fileName)))
+                if (!Directory.Exists(Path.Combine(GRAPH_MAIN_FOLDER_PATH, fileName)))
                 {
-                    Directory.CreateDirectory(Path.Combine(DS_MAIN_FOLDER_PATH, fileName));
+                    Directory.CreateDirectory(Path.Combine(GRAPH_MAIN_FOLDER_PATH, fileName));
                     AssetDatabase.Refresh();
                 }
                 return graphData;
@@ -84,7 +84,7 @@ namespace KorYmeLibrary.DialogueSystem.Utilities
                 path = Path.Combine(tmpType.Name, path);
                 tmpType = tmpType.BaseType;
             }
-            path = Path.Combine(DS_MAIN_FOLDER_PATH, graphName, path);
+            path = Path.Combine(GRAPH_MAIN_FOLDER_PATH, graphName, path);
             if (!Directory.Exists(path)) 
             {
                 Directory.CreateDirectory(Path.Combine(path));
@@ -109,7 +109,7 @@ namespace KorYmeLibrary.DialogueSystem.Utilities
                 path = Path.Combine(tmpType.Name, path);
                 tmpType = tmpType.BaseType;
             }
-            path = Path.Combine(DS_MAIN_FOLDER_PATH, path);
+            path = Path.Combine(GRAPH_MAIN_FOLDER_PATH, path);
             if (!Directory.Exists(path))
             {
                 Debug.Log("The file in which the data should have been saved has been destroyed");

@@ -5,6 +5,7 @@ using UnityEditor.Experimental.GraphView;
 using KorYmeLibrary.DialogueSystem.Interfaces;
 using KorYmeLibrary.DialogueSystem.Windows;
 using UnityEngine.UIElements;
+using log4net.Util;
 
 namespace KorYmeLibrary.DialogueSystem
 {
@@ -22,13 +23,18 @@ namespace KorYmeLibrary.DialogueSystem
 
         public void InitializeElement(Vector2 position)
         {
-            InitializeGroupData(position);
+            GenerateGroupData();
+            InitializeGroupDataFields(position);
             InitializeFieldsWithGroupData();
         }
 
-        protected virtual void InitializeGroupData(Vector2 position)
+        protected virtual void GenerateGroupData()
         {
             GroupData = ScriptableObject.CreateInstance<DSGroupData>();
+        }
+
+        protected virtual void InitializeGroupDataFields(Vector2 position)
+        {
             GroupData.ID = Guid.NewGuid().ToString();
             GroupData.Position = position;
         }
@@ -36,7 +42,7 @@ namespace KorYmeLibrary.DialogueSystem
         void InitializeFieldsWithGroupData()
         {
             SetPosition(new Rect(GroupData.Position, Vector2.zero));
-            title = GroupData.Title;
+            title = GroupData.ElementName;
         }
 
         public void RemoveAllSubElements() => RemoveElements(containedElements);
@@ -44,7 +50,7 @@ namespace KorYmeLibrary.DialogueSystem
         protected override void OnGroupRenamed(string oldName, string newName)
         {
             base.OnGroupRenamed(oldName, newName);
-            GroupData.Title = newName;
+            GroupData.ElementName = newName;
         }
 
         public void Save()

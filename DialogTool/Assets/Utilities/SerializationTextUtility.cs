@@ -1,6 +1,6 @@
-namespace KorYmeLibrary.DialogueSystem.Utilities
+namespace KorYmeLibrary.Utilities
 {
-    public static class DSTextUtility
+    public static class SerializationTextUtility
     {
         const string ALLOWED_CHARACTERS = "_";
 

@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
-using KorYmeLibrary.DialogueSystem.Utilities;
+using KorYmeLibrary.Utilities.Editor;
 using KorYmeLibrary.DialogueSystem.Interfaces;
 
 namespace KorYmeLibrary.DialogueSystem.Windows
@@ -172,11 +172,16 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             }
         }
 
-        public void SaveGraph()
+        public void SaveGraph(DSGraphData graphData)
         {
-            if (_dsEditorWindow.GraphData == null) return;
-            // Place all nodes in the ready to remove part
-            ClearGraphData();
+            if (graphData == null) return;
+            // Place all nodes in the ready-to-remove-part
+            List<DSElementData> allRemovedData = new List<DSElementData>();
+            allRemovedData.AddRange(graphData.AllNodes);
+            allRemovedData.AddRange(graphData.AllGroups);
+            graphData.AllNodes.Clear();
+            graphData.AllGroups.Clear();
+            allRemovedData.RemoveAll(x => x == null);
             // Check if the node still exist or if it needs to be instantiated as a scriptable object
             IEnumerable<IGraphSavable> allElements = graphElements.OfType<IGraphSavable>();
             foreach (IGraphSavable element in allElements)
@@ -184,35 +189,39 @@ namespace KorYmeLibrary.DialogueSystem.Windows
                 switch (element)
                 {
                     case DSNode node:
-                        AddToNodes(node.NodeData);
+                        AddToNodes(node.NodeData, allRemovedData);
                         break;
                     case DSGroup group:
-                        AddToGroups(group.GroupData);
+                        AddToGroups(group.GroupData, allRemovedData);
                         break;
-                    default: break;
+                    default: 
+                        break;
                 }
                 element.Save();
+            }
+            foreach (DSElementData elementData in allRemovedData)
+            {
+                if (elementData == null) continue;
+                AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(elementData));
             }
             AssetDatabase.SaveAssets();
         }
 
-        void ClearGraphData() => _dsEditorWindow.GraphData.PlaceAllDataInRemoved();
-
         void SaveDataInProject<T>(T elementData) where T : DSElementData
             => _dsEditorWindow.GraphSaveHandler.SaveDataInProject(elementData, _dsEditorWindow.GraphData.name);
 
-        void AddToNodes<T>(T nodeData) where T : DSNodeData
+        void AddToNodes<T>(T nodeData, List<DSElementData> allRemovedData) where T : DSNodeData
         {
-            if (!_dsEditorWindow.GraphData.AllRemovedElements.Remove(nodeData))
+            if (!allRemovedData.Remove(nodeData))
             {
                 SaveDataInProject(nodeData);
             }
             _dsEditorWindow.GraphData.AllNodes.Add(nodeData);
         }
 
-        void AddToGroups<T>(T groupData) where T : DSGroupData
+        void AddToGroups<T>(T groupData, List<DSElementData> allRemovedData) where T : DSGroupData
         {
-            if (!_dsEditorWindow.GraphData.AllRemovedElements.Remove(groupData))
+            if (!allRemovedData.Remove(groupData))
             {
                 SaveDataInProject(groupData);
             }
@@ -221,9 +230,9 @@ namespace KorYmeLibrary.DialogueSystem.Windows
         #endregion
 
         #region STYLES_ADDITION_METHODS
-        private void AddStyles() => this.AddStyleSheets(
-            "Assets/DialogSystem/Editor Default Resources/DSGraphViewStyles.uss",
-            "Assets/DialogSystem/Editor Default Resources/DSNodeStyles.uss"
+        private void AddStyles() => this.LoadAndAddStyleSheets(
+            "DialogueSystem/DSGraphViewStyles.uss",
+            "DialogueSystem/DSNodeStyles.uss"
         );
 
         private void AddMiniMapStyles()

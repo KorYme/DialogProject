@@ -1,12 +1,9 @@
 using System;
-using UnityEditor;
-using UnityEditor.Experimental.GraphView;
-using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 
-namespace KorYmeLibrary.DialogueSystem.Utilities
+namespace KorYmeLibrary.Utilities
 {
-    public static class DSElementUtility
+    public static class UIElementUtility
     {
         public static VisualElement Add(this VisualElement element, params VisualElement[] childs)
         {
@@ -55,31 +52,6 @@ namespace KorYmeLibrary.DialogueSystem.Utilities
             return button;
         }
 
-        public static Port CreatePort(this DSNode node, string otherNodeID = null, string portName = null, 
-            Orientation orientation = Orientation.Horizontal, Direction direction = Direction.Output, 
-            Port.Capacity capacity = Port.Capacity.Single)
-        {
-            Port port = node.InstantiatePort(orientation, direction, capacity, typeof(bool));
-            port.name = otherNodeID;
-            port.portName = portName;
-            return port;
-        }
-
-        public static ObjectField CreateObjectField(string title = null, Type type = null, UnityEngine.Object initialValue = null, EventCallback<ChangeEvent<UnityEngine.Object>> callback = null)
-        {
-            ObjectField objectField = new ObjectField()
-            {
-                label = title,
-                objectType = type,
-                value = initialValue,
-            };
-            if (callback != null)
-            {
-                objectField.RegisterValueChangedCallback(callback);
-            }
-            return objectField;
-        }
-
         public static Toggle CreateToggle(bool initialValue = false, string labelValue = null, EventCallback<ChangeEvent<bool>> callback = null)
         {
             Toggle toggle = new Toggle()
@@ -93,3 +65,4 @@ namespace KorYmeLibrary.DialogueSystem.Utilities
         }
     }
 }
+

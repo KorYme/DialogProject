@@ -4,6 +4,8 @@ using UnityEngine.UIElements;
 using UnityEditor;
 using UnityEditor.UIElements;
 using KorYmeLibrary.DialogueSystem.Utilities;
+using KorYmeLibrary.Utilities;
+using KorYmeLibrary.Utilities.Editor;
 
 namespace KorYmeLibrary.DialogueSystem.Windows
 {
@@ -31,13 +33,9 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             {
                 if (value != _graphData)
                 {
-                    if (GraphData != null)
+                    if (GraphData != null && WindowData.IsSaveOnLoad)
                     {
-                        if (WindowData.IsSaveOnLoad)
-                        {
-                            SaveData();
-                        }
-                        GraphData.DeleteAllRemovedData();
+                        SaveData();
                     }
                     _graphData = value;
                     _onGraphDataChange?.Invoke(value != null);
@@ -64,7 +62,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             GraphSaveHandler = new DSGraphSaveHandler();
             _graphData = WindowData.LastGraphData;
             _onGraphDataChange += value => { if (value) WindowData.LastGraphData = GraphData; };
-            rootVisualElement.AddStyleSheets("Assets/DialogSystem/Editor Default Resources/DSVariables.uss");
+            rootVisualElement.LoadAndAddStyleSheets("DialogueSystem/DSVariables.uss");
             AddGraphView();
             AddToolbar();
             LoadData();
@@ -88,13 +86,13 @@ namespace KorYmeLibrary.DialogueSystem.Windows
         {
             Toolbar toolbar = new Toolbar();
 
-            ObjectField graphFileField = DSElementUtility.CreateObjectField("Graph File :", typeof(DSGraphData), GraphData == null ? null : GraphData, ChangeGraphDataFile);
-            Button saveButton = DSElementUtility.CreateButton("Save", SaveData);
-            Toggle autoSavetoggle = DSElementUtility.CreateToggle(WindowData.IsSaveOnLoad ,"Save on Load :", ChangeSaveOnLoad);
-            Button clearButton = DSElementUtility.CreateButton("Clear", ClearGraph);
-            TextField fileNameTextfield = DSElementUtility.CreateTextField(WindowData.FileName, "New File Name :", ChangeFileName);
-            Button newGraphButton = DSElementUtility.CreateButton("New Graph", GenerateNewGraph);
-            Button miniMapButton = DSElementUtility.CreateButton("Mini Map", ToggleMiniMap);
+            ObjectField graphFileField = EditorUIElementUtility.CreateObjectField("Graph File :", typeof(DSGraphData), GraphData == null ? null : GraphData, ChangeGraphDataFile);
+            Button saveButton = UIElementUtility.CreateButton("Save", SaveData);
+            Toggle autoSavetoggle = UIElementUtility.CreateToggle(WindowData.IsSaveOnLoad ,"Save on Load :", ChangeSaveOnLoad);
+            Button clearButton = UIElementUtility.CreateButton("Clear", ClearGraph);
+            TextField fileNameTextfield = UIElementUtility.CreateTextField(WindowData.FileName, "New File Name :", ChangeFileName);
+            Button newGraphButton = UIElementUtility.CreateButton("New Graph", GenerateNewGraph);
+            Button miniMapButton = UIElementUtility.CreateButton("Mini Map", ToggleMiniMap);
 
             saveButton.SetEnabled(GraphData != null);
             _onGraphDataChange += saveButton.SetEnabled;
@@ -109,7 +107,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             _onFileNameChange += fileNameTextfield.SetValueWithoutNotify;
 
             toolbar.Add(graphFileField, saveButton, autoSavetoggle, clearButton, fileNameTextfield, newGraphButton, miniMapButton);
-            toolbar.AddStyleSheets("Assets/DialogSystem/Editor Default Resources/DSToolbarStyles.uss");
+            toolbar.LoadAndAddStyleSheets("DialogueSystem/DSToolbarStyles.uss");
             rootVisualElement.Add(toolbar);
         }
         #endregion
@@ -121,7 +119,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
         {
             if (GraphData != null)
             {
-                _graphView?.SaveGraph();
+                _graphView?.SaveGraph(GraphData);
             }
             else
             {

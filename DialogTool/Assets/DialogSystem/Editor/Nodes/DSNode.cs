@@ -1,46 +1,29 @@
 using System;
+using System.Linq;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 using UnityEditor.Experimental.GraphView;
-using KorYmeLibrary.DialogueSystem.Utilities;
 using KorYmeLibrary.DialogueSystem.Windows;
 using KorYmeLibrary.DialogueSystem.Interfaces;
-using System.Collections.Generic;
-using System.Linq;
+using KorYmeLibrary.Utilities;
+using KorYmeLibrary.Utilities.Editor;
 
 namespace KorYmeLibrary.DialogueSystem
 {
     public class DSNode : Node, IGraphSavable
     {
-        public virtual DSNodeData NodeData { get; protected set; } 
-        public Port InputPort {  get; protected set; }
-
-        protected DSGraphView _graphView;        
-
-        public DSNode(DSGraphView graphView, Vector2 position)
-        {
-            InitializeNodeData();
-            _graphView = graphView;
-            SetPosition(new Rect(position, Vector2.zero));
-            mainContainer.AddClasses("ds-node__main-container");
-            extensionContainer.AddClasses("ds-node__extension-container");
-        }
-
-        public DSNode(DSGraphView graphView, DSNodeData data)
-        {
-            NodeData = data;
-            _graphView = graphView;
-            SetPosition(new Rect(data.Position, Vector2.zero));
-            mainContainer.AddClasses("ds-node__main-container");
-            extensionContainer.AddClasses("ds-node__extension-container");
-        }
+        public DSNodeData NodeData { get; protected set; }
+        public Port InputPort { get; protected set; }
+        protected DSGraphView _graphView;
 
         public DSNode() { }
 
         public void InitializeElement(DSGraphView graphView, Vector2 position)
         {
-            InitializeNodeData();
+            GenerateNodeData();
+            InitializeNodeDataFields();
             _graphView = graphView;
             SetPosition(new Rect(position, Vector2.zero));
             mainContainer.AddClasses("ds-node__main-container");
@@ -56,10 +39,15 @@ namespace KorYmeLibrary.DialogueSystem
             extensionContainer.AddClasses("ds-node__extension-container");
         }
 
-        protected virtual void InitializeNodeData()
+        protected virtual void GenerateNodeData()
         {
             NodeData = ScriptableObject.CreateInstance<DSNodeData>();
+        }
+
+        protected virtual void InitializeNodeDataFields()
+        {
             NodeData.ID = Guid.NewGuid().ToString();
+            NodeData.ElementName = GetType().Name;
         }
 
         public virtual void Draw()
@@ -79,14 +67,14 @@ namespace KorYmeLibrary.DialogueSystem
             // EXTENSION CONTAINER
             DrawExtensionContainer();
 
-            // USEFUL CALLS
+            // USEFUL CALL
             RefreshExpandedState();
         }
 
         protected virtual void DrawTitleContainer() 
         {
-            TextField dialogueNameTextField = DSElementUtility.CreateTextField(NodeData.NodeName, null, 
-                callbackEvent => NodeData.NodeName = callbackEvent.newValue);
+            TextField dialogueNameTextField = UIElementUtility.CreateTextField(NodeData.ElementName, null, 
+                callbackEvent => NodeData.ElementName = callbackEvent.newValue);
             titleContainer.Insert(0, dialogueNameTextField);
             dialogueNameTextField.AddClasses(
                 "ds-node__text-field",
@@ -97,8 +85,8 @@ namespace KorYmeLibrary.DialogueSystem
 
         protected virtual void DrawMainContainer()
         {
-            Foldout scriptableReferenceFoldout = DSElementUtility.CreateFoldout("Scriptable Reference", true);
-            ObjectField dataScriptable = DSElementUtility.CreateObjectField(null, typeof(DSNodeData), NodeData);
+            Foldout scriptableReferenceFoldout = UIElementUtility.CreateFoldout("Scriptable Reference", true);
+            ObjectField dataScriptable = EditorUIElementUtility.CreateObjectField(null, typeof(DSNodeData), NodeData);
             dataScriptable.SetEnabled(false);
             scriptableReferenceFoldout.Add(dataScriptable);
             mainContainer.Insert(1, scriptableReferenceFoldout);

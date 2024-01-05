@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1cd4e86ae6f2cb5458e51aec6e5db5dd, type: 3}
+  m_Name: f73f9628-a5bd-4d0d-a910-00faf3ebc01a
+  m_EditorClassIdentifier: 
+  ElementName: DSChoiceNode
+  ID: f73f9628-a5bd-4d0d-a910-00faf3ebc01a
+  Position: {x: 0, y: 0}
+  DialogueText: Random dialogue !?
+  OutputNodes:
+  - rid: 861702780821176330
+  references:
+    version: 2
+    RefIds:
+    - rid: 861702780821176330
+      type: {class: ChoicePortData, ns: KorYmeLibrary.DialogueSystem, asm: Assembly-CSharp}
+      data:
+        ChoiceText: New Choice
+        InputPortConnected: {fileID: 0}

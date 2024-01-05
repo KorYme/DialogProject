@@ -35,10 +35,9 @@ namespace KorYmeLibrary.DialogueSystem.Windows
                     level = 2,
                     userData = nameof(DSChoiceNode),
                 },
-                new SearchTreeGroupEntry(new GUIContent("Dialogue Group"), 1),
-                new SearchTreeEntry(new GUIContent("Single Group", _spacingIcon))
+                new SearchTreeEntry(new GUIContent("Create Group", _spacingIcon))
                 {
-                    level = 2,
+                    level = 1,
                     userData = nameof(DSGroup),
                 },
             };
