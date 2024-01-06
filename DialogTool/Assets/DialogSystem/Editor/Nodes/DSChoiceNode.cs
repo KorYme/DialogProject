@@ -7,10 +7,11 @@ using KorYmeLibrary.Utilities;
 using KorYmeLibrary.Utilities.Editor;
 using KorYmeLibrary.DialogueSystem.Windows;
 using KorYmeLibrary.DialogueSystem.Interfaces;
+using System.Collections.Generic;
 
 namespace KorYmeLibrary.DialogueSystem
 {
-    public class DSChoiceNode : DSNode, IGraphSavable
+    public class DSChoiceNode : DSNode, IGraphSavable, IGraphInputable, IGraphOutputable
     {
         public DSChoiceNodeData ChoiceNodeData => NodeData as DSChoiceNodeData;
         Action _savePortsAction = null;
@@ -60,33 +61,34 @@ namespace KorYmeLibrary.DialogueSystem
             extensionContainer.Add(customDataContainer);
         }
 
-        private Port CreateOutputPort(string choiceText = "New Choice")
+        protected Port CreateOutputPort(string choiceText = "New Choice")
         {
-            ChoicePortData portData = new ChoicePortData(choiceText);
+            PortData portData = new PortData(choiceText);
             ChoiceNodeData.OutputNodes.Add(portData);
             return CreateOutputPort(portData);
         }
 
-        private Port CreateOutputPort(ChoicePortData choicePortData)
+        protected Port CreateOutputPort(PortData choicePortData)
         {
             Port outputPort = this.CreatePort(choicePortData.InputPortConnected?.ID ?? null);
+            _savePortsAction += () => choicePortData.InputPortConnected = (outputPort.connections?.FirstOrDefault()?.input.node as DSNode)?.NodeData ?? null;
             Button deleteChoiceButton = UIElementUtility.CreateButton("X",
                 () => RemoveChoicePort(outputPort),
-                () => ChoiceNodeData.OutputNodes.Remove(choicePortData)
+                () => ChoiceNodeData.OutputNodes.Remove(choicePortData),
+                () => _savePortsAction -= () => choicePortData.InputPortConnected = (outputPort.connections?.FirstOrDefault()?.input.node as DSNode)?.NodeData ?? null
             );
-            deleteChoiceButton.AddClasses("ds-node__button");
             TextField choiceTextField = UIElementUtility.CreateTextField(choicePortData.ChoiceText, null, callbackData =>
             {
                 choicePortData.ChoiceText = callbackData.newValue;
             });
-            _savePortsAction += () => choicePortData.InputPortConnected = (outputPort.connections?.FirstOrDefault()?.input.node as DSNode)?.NodeData ?? null;
+            deleteChoiceButton.AddClasses("ds-node__button");
             choiceTextField.AddClasses("ds-node__text-field", "ds-node__text-field__hidden", "ds-node__choice-text-field");
             outputPort.Add(deleteChoiceButton, choiceTextField);
             outputContainer.Add(outputPort);
             return outputPort;
         }
 
-        private void RemoveChoicePort(Port port)
+        protected void RemoveChoicePort(Port port)
         {
             Edge edge = port.connections.FirstOrDefault();
             if (edge != null)
@@ -104,6 +106,16 @@ namespace KorYmeLibrary.DialogueSystem
             ChoiceNodeData.Position = NodeData.Position;
             ChoiceNodeData.ElementName = NodeData.ElementName;
             _savePortsAction?.Invoke();
+        }
+
+        public virtual void InitializeEdgeConnections(IEnumerable<IGraphInputable> inputables)
+        {
+            foreach (Port port in outputContainer.Children().OfType<Port>())
+            {
+                Port otherPort = inputables.FirstOrDefault(inputable => inputable.ID == port.name)?.InputPort ?? null;
+                if (otherPort is null) return;
+                _graphView.AddElement(port.ConnectTo(otherPort));
+            }
         }
     }
 }

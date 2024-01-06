@@ -34,7 +34,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
         #endregion
 
         #region MAIN_ELEMENTS_METHODS
-        private void AddMinimap()
+        protected void AddMinimap()
         {
             _miniMap = new MiniMap()
             {
@@ -51,7 +51,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             return _miniMap.visible;
         }
 
-        private void AddManipulators()
+        protected void AddManipulators()
         {
             SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
             this.AddManipulator(new ContentDragger());
@@ -59,15 +59,13 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             this.AddManipulator(new RectangleSelector());
         }
 
-        private void AddSearchWindow()
+        protected void AddSearchWindow()
         {
             if (_searchWindow != null) return;
             _searchWindow = ScriptableObject.CreateInstance<DSSearchWindow>();
             _searchWindow.Initialize(this);
-            nodeCreationRequest = context => OpenSearchWindow(context.screenMousePosition);
+            nodeCreationRequest = context => SearchWindow.Open(new SearchWindowContext(context.screenMousePosition), _searchWindow);
         }
-
-        public bool OpenSearchWindow(Vector2 position) => SearchWindow.Open(new SearchWindowContext(GetLocalMousePosition(position)), _searchWindow);
 
         public void AddGridBackground()
         {
@@ -166,9 +164,9 @@ namespace KorYmeLibrary.DialogueSystem.Windows
                 CreateAndAddGroup<DSGroup>(group, _AllDSNodes.Where(dsNode => group.ChildrenNodes.Contains(dsNode.NodeData)));
             }
             // Link all nodes
-            foreach (DSNode node in _AllDSNodes)
+            foreach (IGraphOutputable outputable in nodes.OfType<IGraphOutputable>())
             {
-                node.InitializeEdgeConnections(_AllDSNodes);
+                outputable.InitializeEdgeConnections(nodes.OfType<IGraphInputable>());
             }
         }
 
@@ -206,10 +204,10 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             }
         }
 
-        void SaveDataInProject<T>(T elementData) where T : DSElementData
+        protected void SaveDataInProject<T>(T elementData) where T : DSElementData
             => _dsEditorWindow.GraphSaveHandler.SaveDataInProject(elementData, _dsEditorWindow.GraphData.name);
 
-        void AddToNodes<T>(T nodeData, List<DSElementData> allRemovedData) where T : DSNodeData
+        protected void AddToNodes<T>(T nodeData, List<DSElementData> allRemovedData) where T : DSNodeData
         {
             if (!allRemovedData.Remove(nodeData))
             {
@@ -219,7 +217,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             EditorUtility.SetDirty(nodeData);
         }
 
-        void AddToGroups<T>(T groupData, List<DSElementData> allRemovedData) where T : DSGroupData
+        protected void AddToGroups<T>(T groupData, List<DSElementData> allRemovedData) where T : DSGroupData
         {
             if (!allRemovedData.Remove(groupData))
             {
@@ -231,12 +229,12 @@ namespace KorYmeLibrary.DialogueSystem.Windows
         #endregion
 
         #region STYLES_ADDITION_METHODS
-        private void AddStyles() => this.LoadAndAddStyleSheets(
+        protected void AddStyles() => this.LoadAndAddStyleSheets(
             "DialogueSystem/DSGraphViewStyles.uss",
             "DialogueSystem/DSNodeStyles.uss"
         );
 
-        private void AddMiniMapStyles()
+        protected void AddMiniMapStyles()
         {
             _miniMap.style.backgroundColor = new StyleColor(new Color32(29,29,29,255));
             _miniMap.style.borderBottomColor = new StyleColor(new Color32(51,51,51,255));
@@ -252,8 +250,16 @@ namespace KorYmeLibrary.DialogueSystem.Windows
         #endregion
 
         #region UTILITIES
-        public Vector2 GetLocalMousePosition(Vector2 mousePosition, bool isSearchWindow = false) => 
-            contentContainer.WorldToLocal(mousePosition - (isSearchWindow ? _dsEditorWindow.position.position : Vector2.zero));
+        public Vector2 GetLocalMousePosition(Vector2 mousePosition, bool isSearchWindow = false)
+        {
+            Vector2 worldMousePosition = mousePosition;
+            if (isSearchWindow)
+            {
+                worldMousePosition = _dsEditorWindow.rootVisualElement.ChangeCoordinatesTo(
+                    _dsEditorWindow.rootVisualElement.parent, mousePosition - _dsEditorWindow.position.position) + Vector2.down * 20;
+            }
+            return contentViewContainer.WorldToLocal(worldMousePosition);
+        }
         #endregion
     }
 }

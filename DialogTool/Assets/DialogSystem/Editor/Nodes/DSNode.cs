@@ -12,9 +12,10 @@ using KorYmeLibrary.Utilities.Editor;
 
 namespace KorYmeLibrary.DialogueSystem
 {
-    public class DSNode : Node, IGraphSavable
+    public class DSNode : Node, IGraphSavable, IGraphInputable
     {
         public DSNodeData NodeData { get; protected set; }
+        public string ID => NodeData.ID;
         public Port InputPort { get; protected set; }
         protected DSGraphView _graphView;
 
@@ -94,7 +95,7 @@ namespace KorYmeLibrary.DialogueSystem
 
         protected virtual void DrawInputContainer()
         {
-            InputPort = this.CreatePort(NodeData.ID, "Dialogue Connection", direction: Direction.Input, capacity: Port.Capacity.Multi);
+            InputPort = this.CreatePort(NodeData.ID, "Input Connection", direction: Direction.Input, capacity: Port.Capacity.Multi);
             inputContainer.Add(InputPort);
         }
 
@@ -111,15 +112,7 @@ namespace KorYmeLibrary.DialogueSystem
             }
         }
 
-        public virtual void InitializeEdgeConnections(IEnumerable<DSNode> nodes)
-        {
-            foreach (Port port in outputContainer.Children().OfType<Port>())
-            {
-                Port otherPort = nodes.FirstOrDefault(node => node.NodeData.ID == port.name)?.InputPort ?? null;
-                if (otherPort is null) return;
-                _graphView.AddElement(port.ConnectTo(otherPort));
-            }
-        }
+        
 
         public virtual void Save()
         {

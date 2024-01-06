@@ -5,7 +5,7 @@ namespace KorYmeLibrary.DialogueSystem
 {
     public class DSGraphData : ScriptableObject
     {
-        public List<DSNodeData> AllNodes = new List<DSNodeData>();
-        public List<DSGroupData> AllGroups = new List<DSGroupData>();
+        [field: SerializeField] public List<DSNodeData> AllNodes { get; set; } = new List<DSNodeData>();
+        [field: SerializeField] public List<DSGroupData> AllGroups { get; set; } = new List<DSGroupData>();
     }
 }
