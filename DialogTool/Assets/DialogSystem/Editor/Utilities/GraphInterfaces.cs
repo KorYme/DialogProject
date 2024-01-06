@@ -10,7 +10,7 @@ namespace KorYmeLibrary.DialogueSystem.Interfaces
 
     public interface IGraphInputable
     {
-        Port InputPort { get; }
+        Port InputPorts { get; }
         string ID { get; }
     }
 

@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -12,11 +11,9 @@ using KorYmeLibrary.Utilities.Editor;
 
 namespace KorYmeLibrary.DialogueSystem
 {
-    public class DSNode : Node, IGraphSavable, IGraphInputable
+    public class DSNode : Node, IGraphSavable
     {
         public DSNodeData NodeData { get; protected set; }
-        public string ID => NodeData.ID;
-        public Port InputPort { get; protected set; }
         protected DSGraphView _graphView;
 
         public DSNode() { }
@@ -93,16 +90,18 @@ namespace KorYmeLibrary.DialogueSystem
             mainContainer.Insert(1, scriptableReferenceFoldout);
         }
 
-        protected virtual void DrawInputContainer()
-        {
-            InputPort = this.CreatePort(NodeData.ID, "Input Connection", direction: Direction.Input, capacity: Port.Capacity.Multi);
-            inputContainer.Add(InputPort);
-        }
+        protected virtual void DrawInputContainer() { }
 
         protected virtual void DrawOutputContainer() { }
 
         protected virtual void DrawExtensionContainer() { }
 
+        public virtual void Save()
+        {
+            NodeData.Position = GetPosition().position;
+        }
+
+        #region UTILITIES
         public void DisconnectAllPorts(VisualElement container)
         {
             foreach (Port port in container.Children())
@@ -111,12 +110,6 @@ namespace KorYmeLibrary.DialogueSystem
                 port.DisconnectAll();
             }
         }
-
-        
-
-        public virtual void Save()
-        {
-            NodeData.Position = GetPosition().position;
-        }
+        #endregion
     }
 }

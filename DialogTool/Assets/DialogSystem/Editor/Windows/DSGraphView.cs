@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
+using KorYmeLibrary.Utilities;
 using KorYmeLibrary.Utilities.Editor;
 using KorYmeLibrary.DialogueSystem.Interfaces;
 
@@ -17,6 +18,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
         MiniMap _miniMap;
         DSEditorWindow _dsEditorWindow;
 
+        Action _onNewInitialNodeSetUp;
         IEnumerable<DSNode> _AllDSNodes => nodes.OfType<DSNode>();
         #endregion
 
@@ -91,6 +93,8 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             switch (evt.target)
             {
                 case DSNode node:
+                    evt.menu.AppendAction("Set as Initial Node", action => SetNodeAsInitialNode(node), 
+                        _dsEditorWindow.GraphData.InitialNode == node.NodeData ? DropdownMenuAction.Status.Disabled : DropdownMenuAction.Status.Normal);
                     evt.menu.AppendAction("Disconnect All Inputs Ports", action => node.DisconnectAllPorts(node.inputContainer));
                     evt.menu.AppendAction("Disconnect All Output Ports", action => node.DisconnectAllPorts(node.outputContainer));
                     break;
@@ -98,6 +102,14 @@ namespace KorYmeLibrary.DialogueSystem.Windows
                     break;
             }
             base.BuildContextualMenu(evt);
+        }
+
+        protected void SetNodeAsInitialNode(DSNode node)
+        {
+            _dsEditorWindow.GraphData.InitialNode = node.NodeData;
+            _onNewInitialNodeSetUp?.Invoke();
+            node.contentContainer.AddClasses("ds-node__initial");
+            _onNewInitialNodeSetUp = () => node?.contentContainer.RemoveClasses("ds-node__initial");
         }
         #endregion
 
@@ -108,6 +120,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             node.InitializeElement(this, position);
             node.Draw();
             AddElement(node);
+            if (_dsEditorWindow.GraphData.InitialNode == null) SetNodeAsInitialNode(node);
             return node;
         }
 
@@ -117,6 +130,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             node.InitializeElement(this, data);
             node.Draw();
             AddElement(node);
+            if (_dsEditorWindow.GraphData.InitialNode == null || data == _dsEditorWindow.GraphData.InitialNode) SetNodeAsInitialNode(node);
             return node;
         }
 
@@ -173,7 +187,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
         public void SaveGraph(DSGraphData graphData)
         {
             if (graphData == null) return;
-            // Place all nodes in the ready-to-remove-part
+            // Place all nodes in the ready-to-remove-list
             List<DSElementData> allRemovedData = new List<DSElementData>();
             allRemovedData.AddRange(graphData.AllNodes);
             allRemovedData.AddRange(graphData.AllGroups);
@@ -197,6 +211,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
                 }
                 element.Save();
             }
+            // Delete all the nodes which doesn't exist anymore on the graph
             foreach (DSElementData elementData in allRemovedData)
             {
                 if (elementData == null) continue;

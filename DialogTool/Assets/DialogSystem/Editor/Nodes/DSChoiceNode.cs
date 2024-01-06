@@ -13,8 +13,11 @@ namespace KorYmeLibrary.DialogueSystem
 {
     public class DSChoiceNode : DSNode, IGraphSavable, IGraphInputable, IGraphOutputable
     {
-        public DSChoiceNodeData ChoiceNodeData => NodeData as DSChoiceNodeData;
+        public DSChoiceNodeData DerivedNodeData => NodeData as DSChoiceNodeData;
         Action _savePortsAction = null;
+
+        public string ID => NodeData.ID;
+        public Port InputPorts { get; protected set; }
 
         public DSChoiceNode() { }
 
@@ -36,9 +39,15 @@ namespace KorYmeLibrary.DialogueSystem
             mainContainer.Insert(2, addChoiceButton);
         }
 
+        protected override void DrawInputContainer()
+        {
+            InputPorts = this.CreatePort(NodeData.ID, "Input Connection", direction: Direction.Input, capacity: Port.Capacity.Multi);
+            inputContainer.Add(InputPorts);
+        }
+
         protected override void DrawOutputContainer()
         {
-            foreach (var outputNode in ChoiceNodeData.OutputNodes)
+            foreach (var outputNode in DerivedNodeData.OutputNodes)
             {
                 CreateOutputPort(outputNode);
             }
@@ -49,8 +58,8 @@ namespace KorYmeLibrary.DialogueSystem
             VisualElement customDataContainer = new VisualElement();
             customDataContainer.AddClasses("ds-node__custom-data-container");
             Foldout textFoldout = UIElementUtility.CreateFoldout("Dialogue Text");
-            TextField textTextField = UIElementUtility.CreateTextField(ChoiceNodeData.DialogueText, null, 
-                callbackData => ChoiceNodeData.DialogueText = callbackData.newValue);
+            TextField textTextField = UIElementUtility.CreateTextField(DerivedNodeData.DialogueText, null, 
+                callbackData => DerivedNodeData.DialogueText = callbackData.newValue);
             textTextField.AddClasses(
                 "ds-node__text-field",
                 "ds-node__quote-text-field"
@@ -63,18 +72,18 @@ namespace KorYmeLibrary.DialogueSystem
 
         protected Port CreateOutputPort(string choiceText = "New Choice")
         {
-            PortData portData = new PortData(choiceText);
-            ChoiceNodeData.OutputNodes.Add(portData);
+            OutputPortData portData = new OutputPortData(choiceText);
+            DerivedNodeData.OutputNodes.Add(portData);
             return CreateOutputPort(portData);
         }
 
-        protected Port CreateOutputPort(PortData choicePortData)
+        protected Port CreateOutputPort(OutputPortData choicePortData)
         {
             Port outputPort = this.CreatePort(choicePortData.InputPortConnected?.ID ?? null);
             _savePortsAction += () => choicePortData.InputPortConnected = (outputPort.connections?.FirstOrDefault()?.input.node as DSNode)?.NodeData ?? null;
             Button deleteChoiceButton = UIElementUtility.CreateButton("X",
                 () => RemoveChoicePort(outputPort),
-                () => ChoiceNodeData.OutputNodes.Remove(choicePortData),
+                () => DerivedNodeData.OutputNodes.Remove(choicePortData),
                 () => _savePortsAction -= () => choicePortData.InputPortConnected = (outputPort.connections?.FirstOrDefault()?.input.node as DSNode)?.NodeData ?? null
             );
             TextField choiceTextField = UIElementUtility.CreateTextField(choicePortData.ChoiceText, null, callbackData =>
@@ -103,8 +112,8 @@ namespace KorYmeLibrary.DialogueSystem
         public override void Save()
         {
             base.Save();
-            ChoiceNodeData.Position = NodeData.Position;
-            ChoiceNodeData.ElementName = NodeData.ElementName;
+            DerivedNodeData.Position = NodeData.Position;
+            DerivedNodeData.ElementName = NodeData.ElementName;
             _savePortsAction?.Invoke();
         }
 
@@ -112,7 +121,7 @@ namespace KorYmeLibrary.DialogueSystem
         {
             foreach (Port port in outputContainer.Children().OfType<Port>())
             {
-                Port otherPort = inputables.FirstOrDefault(inputable => inputable.ID == port.name)?.InputPort ?? null;
+                Port otherPort = inputables.FirstOrDefault(inputable => inputable.ID == port.name)?.InputPorts ?? null;
                 if (otherPort is null) return;
                 _graphView.AddElement(port.ConnectTo(otherPort));
             }

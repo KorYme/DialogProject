@@ -12,5 +12,14 @@ namespace KorYmeLibrary.Utilities
             }
             return element;
         }
+
+        public static VisualElement RemoveClasses(this VisualElement element, params string[] classNames)
+        {
+            foreach (string className in classNames)
+            {
+                element.RemoveFromClassList(className);
+            }
+            return element;
+        }
     }
 }

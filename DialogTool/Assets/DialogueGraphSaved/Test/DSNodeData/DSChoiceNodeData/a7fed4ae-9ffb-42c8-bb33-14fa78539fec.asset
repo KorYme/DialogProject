@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1cd4e86ae6f2cb5458e51aec6e5db5dd, type: 3}
+  m_Name: a7fed4ae-9ffb-42c8-bb33-14fa78539fec
+  m_EditorClassIdentifier: 
+  <ElementName>k__BackingField: DSChoiceNode
+  <ID>k__BackingField: a7fed4ae-9ffb-42c8-bb33-14fa78539fec
+  <Position>k__BackingField: {x: 294, y: -63}
+  <DialogueText>k__BackingField: Random dialogue !?
+  <OutputNodes>k__BackingField:
+  - <ChoiceText>k__BackingField: 
+    <InputPortConnected>k__BackingField: {fileID: 11400000, guid: ea3e40ff95b4e194493238ddeb17202e, type: 2}
+  - <ChoiceText>k__BackingField: 
+    <InputPortConnected>k__BackingField: {fileID: 11400000, guid: ea3e40ff95b4e194493238ddeb17202e, type: 2}
