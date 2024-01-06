@@ -120,6 +120,9 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             if (GraphData != null)
             {
                 _graphView?.SaveGraph(GraphData);
+                EditorUtility.SetDirty(GraphData);
+                EditorUtility.SetDirty(WindowData);
+                AssetDatabase.SaveAssets();
             }
             else
             {

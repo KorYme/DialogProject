@@ -3,9 +3,9 @@ using UnityEngine;
 
 namespace KorYmeLibrary.DialogueSystem
 {
-    public partial class DSGraphData : ScriptableObject
+    public class DSGraphData : ScriptableObject
     {
-        [SerializeField] public List<DSNodeData> AllNodes = new List<DSNodeData>();
-        [SerializeField] public List<DSGroupData> AllGroups = new List<DSGroupData>();
+        public List<DSNodeData> AllNodes = new List<DSNodeData>();
+        public List<DSGroupData> AllGroups = new List<DSGroupData>();
     }
 }

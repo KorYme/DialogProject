@@ -10,9 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 889c79d51f7a48746a879a262498e0a0, type: 3}
-  m_Name: f63487f2-4b33-4eec-a999-3fd649e6c26a
+  m_Name: 2196deb7-1c70-416f-8ca5-1f4454033549
   m_EditorClassIdentifier: 
   ElementName: New Element
-  ID: f63487f2-4b33-4eec-a999-3fd649e6c26a
-  Position: {x: 782, y: 78}
-  ChildrenNodes: []
+  ID: 2196deb7-1c70-416f-8ca5-1f4454033549
+  Position: {x: -14, y: -121}
+  ChildrenNodes:
+  - {fileID: 11400000, guid: 1be1572ec4a89c542b1d73c9dba234ce, type: 2}
+  - {fileID: 11400000, guid: 62616da9501ae7347bb42c394bedf6dc, type: 2}

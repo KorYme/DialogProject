@@ -10,19 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1cd4e86ae6f2cb5458e51aec6e5db5dd, type: 3}
-  m_Name: f73f9628-a5bd-4d0d-a910-00faf3ebc01a
+  m_Name: 2fffb3d6-64d7-4f49-afa7-e40bd7423054
   m_EditorClassIdentifier: 
   ElementName: DSChoiceNode
-  ID: f73f9628-a5bd-4d0d-a910-00faf3ebc01a
-  Position: {x: 0, y: 0}
+  ID: 2fffb3d6-64d7-4f49-afa7-e40bd7423054
+  Position: {x: 432, y: -62}
   DialogueText: Random dialogue !?
   OutputNodes:
-  - rid: 861702780821176330
-  references:
-    version: 2
-    RefIds:
-    - rid: 861702780821176330
-      type: {class: ChoicePortData, ns: KorYmeLibrary.DialogueSystem, asm: Assembly-CSharp}
-      data:
-        ChoiceText: New Choice
-        InputPortConnected: {fileID: 0}
+  - ChoiceText: New Choice
+    InputPortConnected: {fileID: 0}

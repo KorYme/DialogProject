@@ -204,7 +204,6 @@ namespace KorYmeLibrary.DialogueSystem.Windows
                 if (elementData == null) continue;
                 AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(elementData));
             }
-            AssetDatabase.SaveAssets();
         }
 
         void SaveDataInProject<T>(T elementData) where T : DSElementData
@@ -217,6 +216,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
                 SaveDataInProject(nodeData);
             }
             _dsEditorWindow.GraphData.AllNodes.Add(nodeData);
+            EditorUtility.SetDirty(nodeData);
         }
 
         void AddToGroups<T>(T groupData, List<DSElementData> allRemovedData) where T : DSGroupData
@@ -226,6 +226,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
                 SaveDataInProject(groupData);
             }
             _dsEditorWindow.GraphData.AllGroups.Add(groupData);
+            EditorUtility.SetDirty(groupData);
         }
         #endregion
 

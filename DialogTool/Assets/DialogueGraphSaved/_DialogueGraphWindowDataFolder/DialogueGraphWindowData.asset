@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 844ef38d8e027c94aa605beda11e3703, type: 3}
   m_Name: DialogueGraphWindowData
   m_EditorClassIdentifier: 
-  <IsSaveOnLoad>k__BackingField: 0
+  <IsSaveOnLoad>k__BackingField: 1
   <IsMinimapVisible>k__BackingField: 0
-  <FileName>k__BackingField: 
-  <LastGraphData>k__BackingField: {fileID: 0}
+  <FileName>k__BackingField: Retest
+  <LastGraphData>k__BackingField: {fileID: 11400000, guid: a05075331cd8a854cb756421b2e1034a, type: 2}
