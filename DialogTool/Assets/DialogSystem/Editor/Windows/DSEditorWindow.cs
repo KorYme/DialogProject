@@ -151,6 +151,10 @@ namespace KorYmeLibrary.DialogueSystem.Windows
                 return;
             }
             DSGraphData newGraphData = GraphSaveHandler.GenerateGraphDataFile(WindowData.FileName);
+            DSInitialNodeData initialNodeData = CreateInstance<DSInitialNodeData>();
+            initialNodeData.ID = Guid.NewGuid().ToString();
+            GraphSaveHandler.SaveDataInProject(initialNodeData, WindowData.FileName);
+            newGraphData.InitialNode = initialNodeData;
             if (newGraphData != null)
             {
                 if (GraphData != null)

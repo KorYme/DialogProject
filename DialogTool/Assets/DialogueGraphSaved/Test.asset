@@ -12,9 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b85248883e68d845876fda5059d15c0, type: 3}
   m_Name: Test
   m_EditorClassIdentifier: 
-  <InitialNode>k__BackingField: {fileID: 11400000, guid: ea3e40ff95b4e194493238ddeb17202e, type: 2}
-  <AllNodes>k__BackingField:
-  - {fileID: 11400000, guid: a1693010f2f067540ae36a1940189fde, type: 2}
-  - {fileID: 11400000, guid: 475ebfb87a9dba14b9eef64d68ad556a, type: 2}
-  - {fileID: 11400000, guid: ea3e40ff95b4e194493238ddeb17202e, type: 2}
+  <InitialNode>k__BackingField: {fileID: 11400000, guid: 30e7968e5188b6c418ea54168d5a0f4b, type: 2}
+  <AllNodes>k__BackingField: []
   <AllGroups>k__BackingField: []

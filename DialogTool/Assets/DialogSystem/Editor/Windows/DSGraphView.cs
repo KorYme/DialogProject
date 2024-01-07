@@ -8,6 +8,7 @@ using UnityEditor.Experimental.GraphView;
 using KorYmeLibrary.Utilities;
 using KorYmeLibrary.Utilities.Editor;
 using KorYmeLibrary.DialogueSystem.Interfaces;
+using Unity.VisualScripting;
 
 namespace KorYmeLibrary.DialogueSystem.Windows
 {
@@ -18,8 +19,8 @@ namespace KorYmeLibrary.DialogueSystem.Windows
         MiniMap _miniMap;
         DSEditorWindow _dsEditorWindow;
 
-        Action _onNewInitialNodeSetUp;
         IEnumerable<DSNode> _AllDSNodes => nodes.OfType<DSNode>();
+        DSInitialNode _initialNode;
         #endregion
 
         #region CONSTRUCTOR
@@ -32,6 +33,7 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             AddStyles();
             AddMiniMapStyles();
             AddGridBackground();
+            _initialNode = CreateAndAddNode<DSInitialNode>(Vector2.zero);
         }
         #endregion
 
@@ -79,7 +81,11 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             Insert(0, gridBackground);
         }
 
-        public void ClearGraph() => DeleteElements(graphElements);
+        public void ClearGraph()
+        {
+            DeleteElements(graphElements);
+            _initialNode = CreateAndAddNode<DSInitialNode>(Vector2.zero);
+        }
         #endregion
 
         #region CONTEXT_MENU_METHODS
@@ -93,23 +99,13 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             switch (evt.target)
             {
                 case DSNode node:
-                    evt.menu.AppendAction("Set as Initial Node", action => SetNodeAsInitialNode(node), 
-                        _dsEditorWindow.GraphData.InitialNode == node.NodeData ? DropdownMenuAction.Status.Disabled : DropdownMenuAction.Status.Normal);
-                    evt.menu.AppendAction("Disconnect All Inputs Ports", action => node.DisconnectAllPorts(node.inputContainer));
-                    evt.menu.AppendAction("Disconnect All Output Ports", action => node.DisconnectAllPorts(node.outputContainer));
+                    if (node is IGraphInputable) evt.menu.AppendAction("Disconnect All Inputs Ports", action => (node as IGraphInputable).DisconnectAllInputPorts());
+                    if (node is IGraphOutputable) evt.menu.AppendAction("Disconnect All Outputs Ports", action => (node as IGraphOutputable).DisconnectAllOutputPorts());
                     break;
                 default:
                     break;
             }
             base.BuildContextualMenu(evt);
-        }
-
-        protected void SetNodeAsInitialNode(DSNode node)
-        {
-            _dsEditorWindow.GraphData.InitialNode = node.NodeData;
-            _onNewInitialNodeSetUp?.Invoke();
-            node.contentContainer.AddClasses("ds-node__initial");
-            _onNewInitialNodeSetUp = () => node?.contentContainer.RemoveClasses("ds-node__initial");
         }
         #endregion
 
@@ -120,7 +116,6 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             node.InitializeElement(this, position);
             node.Draw();
             AddElement(node);
-            if (_dsEditorWindow.GraphData.InitialNode == null) SetNodeAsInitialNode(node);
             return node;
         }
 
@@ -130,7 +125,6 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             node.InitializeElement(this, data);
             node.Draw();
             AddElement(node);
-            if (_dsEditorWindow.GraphData.InitialNode == null || data == _dsEditorWindow.GraphData.InitialNode) SetNodeAsInitialNode(node);
             return node;
         }
 
@@ -160,6 +154,10 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             // Generate all nodes
             graphData.AllGroups.RemoveAll(x => x == null);
             graphData.AllNodes.RemoveAll(x => x == null);
+            if (graphData.InitialNode != null)
+            {
+                _initialNode.InitializeElement(this, graphData.InitialNode);
+            }
             foreach (DSNodeData nodeData in graphData.AllNodes)
             {
                 switch (nodeData)
@@ -200,11 +198,19 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             {
                 switch (element)
                 {
+                    case DSInitialNode initialNode:
+                        if (graphData.InitialNode == null)
+                        {
+                            SaveDataInProject(initialNode.NodeData, graphData);
+                        }
+                        graphData.InitialNode = _initialNode.DerivedData;
+                        EditorUtility.SetDirty(initialNode.NodeData);
+                        break;
                     case DSNode node:
-                        AddToNodes(node.NodeData, allRemovedData);
+                        AddToNodes(node.NodeData, graphData, allRemovedData);
                         break;
                     case DSGroup group:
-                        AddToGroups(group.GroupData, allRemovedData);
+                        AddToGroups(group.GroupData, graphData, allRemovedData);
                         break;
                     default: 
                         break;
@@ -219,26 +225,26 @@ namespace KorYmeLibrary.DialogueSystem.Windows
             }
         }
 
-        protected void SaveDataInProject<T>(T elementData) where T : DSElementData
-            => _dsEditorWindow.GraphSaveHandler.SaveDataInProject(elementData, _dsEditorWindow.GraphData.name);
+        protected void SaveDataInProject<T>(T elementData, DSGraphData graphData) where T : DSElementData
+            => _dsEditorWindow.GraphSaveHandler.SaveDataInProject(elementData, graphData.name);
 
-        protected void AddToNodes<T>(T nodeData, List<DSElementData> allRemovedData) where T : DSNodeData
+        protected void AddToNodes<T>(T nodeData, DSGraphData graphData, List<DSElementData> allRemovedData) where T : DSNodeData
         {
             if (!allRemovedData.Remove(nodeData))
             {
-                SaveDataInProject(nodeData);
+                SaveDataInProject(nodeData, graphData);
             }
-            _dsEditorWindow.GraphData.AllNodes.Add(nodeData);
+            graphData.AllNodes.Add(nodeData);
             EditorUtility.SetDirty(nodeData);
         }
 
-        protected void AddToGroups<T>(T groupData, List<DSElementData> allRemovedData) where T : DSGroupData
+        protected void AddToGroups<T>(T groupData, DSGraphData graphData, List<DSElementData> allRemovedData) where T : DSGroupData
         {
             if (!allRemovedData.Remove(groupData))
             {
-                SaveDataInProject(groupData);
+                SaveDataInProject(groupData, graphData);
             }
-            _dsEditorWindow.GraphData.AllGroups.Add(groupData);
+            graphData.AllGroups.Add(groupData);
             EditorUtility.SetDirty(groupData);
         }
         #endregion

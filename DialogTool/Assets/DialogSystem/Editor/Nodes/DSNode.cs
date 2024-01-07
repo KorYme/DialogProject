@@ -16,7 +16,11 @@ namespace KorYmeLibrary.DialogueSystem
         public DSNodeData NodeData { get; protected set; }
         protected DSGraphView _graphView;
 
-        public DSNode() { }
+        public DSNode()
+        {
+            mainContainer.AddClasses("ds-node__main-container");
+            extensionContainer.AddClasses("ds-node__extension-container");
+        }
 
         public void InitializeElement(DSGraphView graphView, Vector2 position)
         {
@@ -24,8 +28,6 @@ namespace KorYmeLibrary.DialogueSystem
             InitializeNodeDataFields();
             _graphView = graphView;
             SetPosition(new Rect(position, Vector2.zero));
-            mainContainer.AddClasses("ds-node__main-container");
-            extensionContainer.AddClasses("ds-node__extension-container");
         }
 
         public void InitializeElement(DSGraphView graphView, DSNodeData data)
@@ -33,8 +35,6 @@ namespace KorYmeLibrary.DialogueSystem
             NodeData = data;
             _graphView = graphView;
             SetPosition(new Rect(data.Position, Vector2.zero));
-            mainContainer.AddClasses("ds-node__main-container");
-            extensionContainer.AddClasses("ds-node__extension-container");
         }
 
         protected virtual void GenerateNodeData()
@@ -102,7 +102,7 @@ namespace KorYmeLibrary.DialogueSystem
         }
 
         #region UTILITIES
-        public void DisconnectAllPorts(VisualElement container)
+        protected void DisconnectAllPorts(VisualElement container)
         {
             foreach (Port port in container.Children())
             {

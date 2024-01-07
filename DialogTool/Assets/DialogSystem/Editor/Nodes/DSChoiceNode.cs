@@ -17,14 +17,9 @@ namespace KorYmeLibrary.DialogueSystem
         Action _savePortsAction = null;
 
         public string ID => NodeData.ID;
-        public Port InputPorts { get; protected set; }
+        public Port InputPort { get; protected set; }
 
-        public DSChoiceNode() { }
-
-        public void InitializeElement(DSGraphView graphView, DSChoiceNodeData data)
-        {
-            base.InitializeElement(graphView, data);
-        }
+        public DSChoiceNode() : base() { }
 
         protected override void GenerateNodeData()
         {
@@ -41,8 +36,8 @@ namespace KorYmeLibrary.DialogueSystem
 
         protected override void DrawInputContainer()
         {
-            InputPorts = this.CreatePort(NodeData.ID, "Input Connection", direction: Direction.Input, capacity: Port.Capacity.Multi);
-            inputContainer.Add(InputPorts);
+            InputPort = this.CreatePort(NodeData.ID, "Input Connection", direction: Direction.Input, capacity: Port.Capacity.Multi);
+            inputContainer.Add(InputPort);
         }
 
         protected override void DrawOutputContainer()
@@ -72,12 +67,12 @@ namespace KorYmeLibrary.DialogueSystem
 
         protected Port CreateOutputPort(string choiceText = "New Choice")
         {
-            OutputPortData portData = new OutputPortData(choiceText);
+            DSOutputPortData portData = new DSOutputPortData(choiceText);
             DerivedNodeData.OutputNodes.Add(portData);
             return CreateOutputPort(portData);
         }
 
-        protected Port CreateOutputPort(OutputPortData choicePortData)
+        protected Port CreateOutputPort(DSOutputPortData choicePortData)
         {
             Port outputPort = this.CreatePort(choicePortData.InputPortConnected?.ID ?? null);
             _savePortsAction += () => choicePortData.InputPortConnected = (outputPort.connections?.FirstOrDefault()?.input.node as DSNode)?.NodeData ?? null;
@@ -112,8 +107,6 @@ namespace KorYmeLibrary.DialogueSystem
         public override void Save()
         {
             base.Save();
-            DerivedNodeData.Position = NodeData.Position;
-            DerivedNodeData.ElementName = NodeData.ElementName;
             _savePortsAction?.Invoke();
         }
 
@@ -121,10 +114,14 @@ namespace KorYmeLibrary.DialogueSystem
         {
             foreach (Port port in outputContainer.Children().OfType<Port>())
             {
-                Port otherPort = inputables.FirstOrDefault(inputable => inputable.ID == port.name)?.InputPorts ?? null;
+                Port otherPort = inputables.FirstOrDefault(inputable => inputable.ID == port.name)?.InputPort ?? null;
                 if (otherPort is null) return;
                 _graphView.AddElement(port.ConnectTo(otherPort));
             }
         }
+
+        public void DisconnectAllOutputPorts() => DisconnectAllPorts(outputContainer);
+
+        public void DisconnectAllInputPorts() => DisconnectAllPorts(inputContainer);
     }
 }

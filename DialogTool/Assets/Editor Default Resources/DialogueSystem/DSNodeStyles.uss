@@ -127,9 +127,3 @@ TextField
 {
 	margin-left: var(--ds-metrics-window-pixels-2);
 }
-
-/* PERSONAL */
-.ds-node__initial
-{
-	background-color: #FF0000;
-}

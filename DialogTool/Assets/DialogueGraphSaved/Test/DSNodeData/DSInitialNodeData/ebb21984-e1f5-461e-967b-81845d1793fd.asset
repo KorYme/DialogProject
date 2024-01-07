@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0331d87be6e96484aafe3815a0623594, type: 3}
+  m_Name: ebb21984-e1f5-461e-967b-81845d1793fd
+  m_EditorClassIdentifier: 
+  <ElementName>k__BackingField: DSInitialNode
+  <ID>k__BackingField: ebb21984-e1f5-461e-967b-81845d1793fd
+  <Position>k__BackingField: {x: 0, y: 0}
+  <OutputNode>k__BackingField:
+    <ChoiceText>k__BackingField: 
+    <InputPortConnected>k__BackingField: {fileID: 0}
