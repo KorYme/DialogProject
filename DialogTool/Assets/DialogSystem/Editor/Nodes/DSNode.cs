@@ -15,6 +15,7 @@ namespace KorYmeLibrary.DialogueSystem
     {
         public DSNodeData NodeData { get; protected set; }
         protected DSGraphView _graphView;
+        private Action _onNodeDataChanged;
 
         public DSNode()
         {
@@ -33,6 +34,7 @@ namespace KorYmeLibrary.DialogueSystem
         public void InitializeElement(DSGraphView graphView, DSNodeData data)
         {
             NodeData = data;
+            _onNodeDataChanged?.Invoke();
             _graphView = graphView;
             SetPosition(new Rect(data.Position, Vector2.zero));
         }
@@ -85,6 +87,7 @@ namespace KorYmeLibrary.DialogueSystem
         {
             Foldout scriptableReferenceFoldout = UIElementUtility.CreateFoldout("Scriptable Reference", true);
             ObjectField dataScriptable = EditorUIElementUtility.CreateObjectField(null, typeof(DSNodeData), NodeData);
+            _onNodeDataChanged += () => dataScriptable.SetValueWithoutNotify(NodeData);
             dataScriptable.SetEnabled(false);
             scriptableReferenceFoldout.Add(dataScriptable);
             mainContainer.Insert(1, scriptableReferenceFoldout);
